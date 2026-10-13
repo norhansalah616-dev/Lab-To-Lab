@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>Lab to Lab Manifest Generator</title>
-  <!-- Tailwind CSS للتصميم -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- مكتبة SheetJS لقراءة الإكسيل -->
+  <!-- SheetJS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <style>
@@ -24,10 +24,7 @@
       table { border-collapse: collapse !important; width: 100% !important; font-size: 11pt !important; }
       th, td { border: 1px solid #000 !important; padding: 5px 8px !important; }
     }
-
-    .form-table th, .form-table td {
-      border: 1px solid #475569;
-    }
+    .form-table th, .form-table td { border: 1px solid #475569; }
   </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 p-4 md:p-8 font-sans">
@@ -39,7 +36,7 @@
       <div class="border-b pb-4 flex justify-between items-center">
         <div>
           <h1 class="text-2xl font-bold text-slate-900">نظام استخراج نماذج Lab to Lab</h1>
-          <p class="text-xs text-slate-500 mt-1">فلترة عمود Product مع اشتراط فراغ خانة technical | كود النموذج: AMS.EG.LAB.004.F.1 V1</p>
+          <p class="text-xs text-slate-500 mt-1">مطابق للنموذج المعتمد: AMS.EG.LAB.004.F.1 V1</p>
         </div>
         <button id="printBtn" onclick="window.print()" disabled class="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white font-bold py-2.5 px-6 rounded-lg shadow transition flex items-center gap-2">
           <span>🖨️</span> طباعة / حفظ كـ PDF
@@ -81,21 +78,20 @@
       </div>
     </div>
 
-    <!-- مكان عرض الكشوفات أو رسالة التنبيه -->
+    <!-- مكان عرض الكشوفات أو التنبيه -->
     <div id="formsContainer" class="space-y-8"></div>
 
   </div>
 
   <script>
-    // خريطة توجيه التحاليل إلى المعامل المحددة
-    const TEST_MAPPING = {
-      // 1. معمل دكتور صلاح مرزوق
+    // 1. خريطة التحاليل والمعامل
+    const RAW_TEST_MAPPING = {
+      // معمل دكتور صلاح مرزوق
       'igm immunoglobulin': 'معمل دكتور صلاح مرزوق',
       'serum ig g': 'معمل دكتور صلاح مرزوق',
       'serum igg': 'معمل دكتور صلاح مرزوق',
       'ace (angiotensin converting enzyme)': 'معمل دكتور صلاح مرزوق',
       'a.m.a': 'معمل دكتور صلاح مرزوق',
-      'ama': 'معمل دكتور صلاح مرزوق',
       'homocystien': 'معمل دكتور صلاح مرزوق',
       'homocysteine': 'معمل دكتور صلاح مرزوق',
       'h. pylori iga in serum': 'معمل دكتور صلاح مرزوق',
@@ -104,12 +100,9 @@
       'protein s': 'معمل دكتور صلاح مرزوق',
       'lupus anticoagulant': 'معمل دكتور صلاح مرزوق',
       'anti - cardiolipin igm': 'معمل دكتور صلاح مرزوق',
-      'anti-cardiolipin igm': 'معمل دكتور صلاح مرزوق',
       'anti - cardiolipin igg': 'معمل دكتور صلاح مرزوق',
-      'anti-cardiolipin igg': 'معمل دكتور صلاح مرزوق',
       'lipoprotein (a)': 'معمل دكتور صلاح مرزوق',
       'a.sm.a': 'معمل دكتور صلاح مرزوق',
-      'asma': 'معمل دكتور صلاح مرزوق',
       'sla ab (soluble liver ag auto ab)': 'معمل دكتور صلاح مرزوق',
       'ebv ab igm': 'معمل دكتور صلاح مرزوق',
       'aldosterone renin ratio': 'معمل دكتور صلاح مرزوق',
@@ -117,13 +110,12 @@
       'anti dgp igg': 'معمل دكتور صلاح مرزوق',
       'anti dgp iga': 'معمل دكتور صلاح مرزوق',
 
-      // 2. معمل المبره
+      // معمل المبره
       'immunofixation': 'معمل المبره',
       'protein electrophoresis': 'معمل المبره',
       'p c r for tb': 'معمل المبره',
-      'pcr for tb': 'معمل المبره',
 
-      // 3. معمل الانصارى
+      // معمل الانصارى
       'vitamin a': 'معمل الانصارى',
       'vitamin e': 'معمل الانصارى',
       'serum selenium': 'معمل الانصارى',
@@ -132,17 +124,14 @@
       'vitamin b6': 'معمل الانصارى',
       'vitamin b2': 'معمل الانصارى',
 
-      // 4. معمل سموحة
+      // معمل سموحة
       'c.e.a.': 'معمل سموحة',
-      'cea': 'معمل سموحة',
       'ca 15.3': 'معمل سموحة',
       'ca 15-3': 'معمل سموحة',
       'alpha-fetoprotein(afp)': 'معمل سموحة',
-      'alpha-fetoprotein (afp)': 'معمل سموحة',
       'a ds d n a': 'معمل سموحة',
-      'anti dsdna': 'معمل سموحة',
 
-      // 5. معمل انطونيادس
+      // معمل انطونيادس
       'l h (luteinising hormone)': 'معمل انطونيادس',
       'f s h (follicle stimulating hormone)': 'معمل انطونيادس',
       'l h': 'معمل انطونيادس',
@@ -150,7 +139,7 @@
       'f s h': 'معمل انطونيادس',
       'fsh': 'معمل انطونيادس',
 
-      // 6. معمل ياسر الدويك
+      // معمل ياسر الدويك
       'small biopsy': 'معمل ياسر الدويك',
       'cytology (pleural fluid)': 'معمل ياسر الدويك',
       'whole organ': 'معمل ياسر الدويك',
@@ -162,7 +151,22 @@
       'immunohistochemistry for cd 10': 'معمل ياسر الدويك'
     };
 
-    // ضبط الوقت الافتراضي
+    // دالة لتنظيف النص تماماً من أي مسافات، نقاط، أو رموز لضمان التطابق
+    function normalize(str) {
+      return String(str || '')
+        .replace(/\u00a0/g, ' ') // إزالة المسافات الخفية
+        .toLowerCase()
+        .replace(/[^a-z0-9\u0600-\u06ff]/gi, '') // إبقاء الحروف والأرقام فقط
+        .trim();
+    }
+
+    // بناء خريطة معالجة مسبقة للمطابقة الفورية
+    const NORMALIZED_MAPPING = {};
+    for (let [k, lab] of Object.entries(RAW_TEST_MAPPING)) {
+      NORMALIZED_MAPPING[normalize(k)] = lab;
+    }
+
+    // إعداد التاريخ والوقت
     const now = new Date();
     document.getElementById('dispatchDateTime').value = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
@@ -181,30 +185,40 @@
       reader.onload = function(evt) {
         const data = new Uint8Array(evt.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheetName = workbook.SheetNames[0];
-        const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName], { defval: '' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+
+        // 1. قراءة الملف كمصفوفة صفوف للبحث التلقائي عن السطر الحقيقي للترويسة
+        const rawRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+        
+        let headerRowIndex = 0;
+        for (let i = 0; i < Math.min(rawRows.length, 15); i++) {
+          const rowText = rawRows[i].map(c => normalize(c)).join(' ');
+          // البحث عن كلمات دالة تدل على بداية الجدول
+          if (rowText.includes('product') || rowText.includes('patient') || rowText.includes('mrn') || rowText.includes('barcode') || rowText.includes('test')) {
+            headerRowIndex = i;
+            break;
+          }
+        }
+
+        // 2. تحويل البيانات لكائنات بالاعتماد على سطر الترويسة المكتشف
+        const rows = XLSX.utils.sheet_to_json(firstSheet, { range: headerRowIndex, defval: '' });
 
         processAndRender(rows);
       };
       reader.readAsArrayBuffer(file);
     }
 
-    // دالة مرنة للبحث عن اسم العمود مع تنظيف المسافات
-    function getVal(row, keys) {
+    // دالة مرنة للغاية للبحث عن قيمة العمود حتى لو اختلف اسمه قليلاً
+    function getVal(row, possibleKeys) {
       for (let k of Object.keys(row)) {
-        const cleanKey = k.trim().toLowerCase();
-        for (let target of keys) {
-          if (cleanKey === target.toLowerCase()) {
-            return String(row[k]).trim();
+        const cleanK = normalize(k);
+        for (let target of possibleKeys) {
+          if (cleanK.includes(normalize(target))) {
+            return String(row[k] || '').trim();
           }
         }
       }
       return '';
-    }
-
-    // دالة لتوحيد صيغة اسم التحليل (إزالة المسافات المزدوجة والأحرف الكبيرة)
-    function cleanTestString(str) {
-      return str.toLowerCase().replace(/\s+/g, ' ').trim();
     }
 
     function processAndRender(rows) {
@@ -213,28 +227,45 @@
       const groupedByLab = {};
       let transferredCount = 0;
       let skippedCount = 0;
+      const sampleDetectedTests = [];
 
       rows.forEach(row => {
-        const rawProduct = getVal(row, ['product', 'products', 'test', 'test name']);
-        const productKey = cleanTestString(rawProduct);
-        const technicalNotes = getVal(row, ['technical', 'technicals', 'tech notes', 'tech note']);
+        // قراءة اسم التحليل من عمود Product أو Test
+        const rawProduct = getVal(row, ['product', 'test', 'item', 'service', 'اسم التحليل']);
+        if (rawProduct && sampleDetectedTests.length < 5) {
+          sampleDetectedTests.push(rawProduct);
+        }
 
-        // التحقق من أن التحليل تابع لمعمل خارجي
-        const targetLab = TEST_MAPPING[productKey];
+        // قراءة خانة الملاحظات الفنية Technical
+        const technicalNotes = getVal(row, ['technical', 'technician', 'tech note']);
+
+        // التحقق من المعمل باستخدام الفحص الذكي
+        const normProduct = normalize(rawProduct);
+        let targetLab = NORMALIZED_MAPPING[normProduct];
+
+        // في حال كان اسم التحليل بالشيت يحتوي تفاصيل زيادة
+        if (!targetLab && normProduct.length > 3) {
+          for (let [key, lab] of Object.entries(NORMALIZED_MAPPING)) {
+            if (normProduct.includes(key) || key.includes(normProduct)) {
+              targetLab = lab;
+              break;
+            }
+          }
+        }
 
         if (targetLab) {
-          // الشرط الإلزامي: خانة technical فارغة تماماً
+          // التحقق من أن خانة technical خالية تماماً
           if (technicalNotes === '') {
             if (!groupedByLab[targetLab]) {
               groupedByLab[targetLab] = [];
             }
 
             groupedByLab[targetLab].push({
-              name: getVal(row, ['name', 'patient name', 'اسم المريض']),
+              name: getVal(row, ['patient name', 'name', 'اسم المريض']),
               age: getVal(row, ['age', 'السن', 'العمر']),
-              id: getVal(row, ['id', 'patient id', 'mrn', 'barcode', 'الرقم الطبي', 'الباركود']),
+              id: getVal(row, ['mrn', 'id', 'patient id', 'barcode', 'الرقم الطبي', 'الباركود']),
               test: rawProduct.toUpperCase(),
-              note: getVal(row, ['note', 'notes', 'patient notes', 'ملاحظات'])
+              note: getVal(row, ['note', 'notes', 'ملاحظات'])
             });
             transferredCount++;
           } else {
@@ -245,21 +276,35 @@
 
       const labNames = Object.keys(groupedByLab);
 
-      // في حالة عدم وجود أي تحاليل مطابقة
+      // في حال عدم العثور على نتائج
       if (labNames.length === 0) {
         printBtn.disabled = true;
         statsSummary.classList.add('hidden');
+        
+        // جلب أسماء الأعمدة لتسهيل فحص الشيت
+        const detectedColumns = rows.length > 0 ? Object.keys(rows[0]).join(' | ') : 'لم يتم العثور على أعمدة';
+
         formsContainer.innerHTML = `
-          <div class="bg-amber-50 border border-amber-200 text-amber-800 text-center p-8 rounded-xl shadow-sm">
-            <span class="text-4xl block mb-3">📋</span>
-            <p class="text-xl font-bold">لا يوجد Lab To Lab</p>
-            <p class="text-xs text-amber-600 mt-1">لم يتم العثور على تحاليل مطابقة أو أن جميع التحاليل مدون بها ملاحظات فنية في عمود technical.</p>
+          <div class="bg-amber-50 border border-amber-300 text-amber-900 p-6 rounded-xl shadow-sm space-y-3">
+            <div class="flex items-center gap-3">
+              <span class="text-3xl">📋</span>
+              <p class="text-xl font-bold">لا يوجد Lab To Lab</p>
+            </div>
+            <p class="text-xs text-amber-700">لم يطابق أي سجل شروط الخروج لمعمل خارجي مع فراغ خانة technical.</p>
+            
+            <!-- صندوق الفحص التقني التلقائي للشيت -->
+            <div class="bg-white/80 p-3 rounded-lg border border-amber-200 text-right text-xs font-mono space-y-1 text-slate-700">
+              <p class="font-bold text-slate-900">🔍 تقرير فحص الشيت التلقائي:</p>
+              <p>• إجمالي الصفوف المفحوصة: ${rows.length}</p>
+              <p>• أسماء الأعمدة المكتشفة: <span class="text-blue-700 font-bold">${detectedColumns || 'فارغة'}</span></p>
+              <p>• عينة من أسماء التحاليل المقروءة: <span class="text-emerald-700 font-bold">${sampleDetectedTests.join(' , ') || 'لم تُقرأ أي تحاليل'}</span></p>
+            </div>
           </div>
         `;
         return;
       }
 
-      // إظهار الإحصائيات وتفعيل زر الطباعة
+      // إظهار الإحصائيات
       statsSummary.classList.remove('hidden');
       document.getElementById('totalCount').innerText = rows.length;
       document.getElementById('transferredCount').innerText = transferredCount;
@@ -332,7 +377,7 @@
         });
       });
 
-      // إضافة أسطر فارغة للطوارئ
+      // إضافة أسطر فارغة إضافية للحالات المكتوبة يدوياً
       for (let i = 0; i < 3; i++) {
         rowsHtml += `
           <tr class="h-6">

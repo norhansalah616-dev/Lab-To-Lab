@@ -14,7 +14,7 @@
         page-break-after: always;
         break-after: page;
         margin: 0 !important;
-        padding: 12mm 10mm !important;
+        padding: 10mm !important;
         box-shadow: none !important;
         border: none !important;
         width: 100% !important;
@@ -22,10 +22,7 @@
       table { border-collapse: collapse !important; width: 100% !important; }
       th, td { border: 1.2px solid #000 !important; padding: 4px 6px !important; }
     }
-
-    .form-table th, .form-table td {
-      border: 1.2px solid #334155;
-    }
+    .form-table th, .form-table td { border: 1.2px solid #334155; }
   </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-900 p-4 md:p-8 font-sans">
@@ -44,7 +41,6 @@
         </button>
       </div>
 
-      <!-- خانات ترويسة النموذج القابلة للتعديل -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
         <div>
           <label class="block font-semibold text-slate-700 mb-1">اسم المسلم:</label>
@@ -72,21 +68,21 @@
         <label class="cursor-pointer flex flex-col items-center justify-center border-2 border-dashed border-blue-400 bg-blue-50/40 hover:bg-blue-50 py-5 rounded-xl transition">
           <span class="text-3xl mb-1">📊</span>
           <span class="text-sm font-bold text-blue-700">اضغط لاختيار شيت الإكسيل (Excel Sheet)</span>
-          <span class="text-xs text-slate-400 mt-1">يتم الكشف التلقائي عن الأعمدة وتصنيف كل معمل في فورمة مستقلة</span>
+          <span class="text-xs text-slate-400 mt-1">يتم الفرز الآلي حسب المعامل الخارجية وتجهيز نماذج الطباعة مباشرة</span>
           <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden">
         </label>
       </div>
 
-      <!-- ملخص الإحصائيات -->
+      <!-- شريط الإحصائيات -->
       <div id="statsSummary" class="hidden text-xs bg-slate-50 border p-3 rounded-lg flex justify-around font-medium text-slate-700">
-        <div>إجمالي السجلات المفحوصة: <span id="totalCount" class="font-bold text-slate-900">0</span></div>
+        <div>إجمالي الحالات المفحوصة: <span id="totalCount" class="font-bold text-slate-900">0</span></div>
         <div>عينات Lab to Lab المقبولة: <span id="transferredCount" class="font-bold text-emerald-600">0</span></div>
         <div>عدد المعامل الخارجية: <span id="labsCount" class="font-bold text-blue-600">0</span></div>
         <div>مستبعدة (يوجد ملاحظات technical): <span id="skippedCount" class="font-bold text-amber-600">0</span></div>
       </div>
     </div>
 
-    <!-- منطقة عرض النماذج المجهزة للطباعة -->
+    <!-- مكان عرض الكشوفات -->
     <div id="formsContainer" class="space-y-8"></div>
 
   </div>
@@ -97,18 +93,20 @@
       // 1. معمل دكتور صلاح مرزوق
       'anti cardiolipin igg': 'معمل دكتور صلاح مرزوق',
       'anti cardiolipin igm': 'معمل دكتور صلاح مرزوق',
+      'anti - cardiolipin igg': 'معمل دكتور صلاح مرزوق',
+      'anti - cardiolipin igm': 'معمل دكتور صلاح مرزوق',
       'antithrombin iii': 'معمل دكتور صلاح مرزوق',
       'protein c': 'معمل دكتور صلاح مرزوق',
       'protein s': 'معمل دكتور صلاح مرزوق',
       'homocystien': 'معمل دكتور صلاح مرزوق',
       'homocysteine': 'معمل دكتور صلاح مرزوق',
       'a.m.a': 'معمل دكتور صلاح مرزوق',
-      'a.ma': 'معمل دكتور صلاح مرزوق',
       'ama': 'معمل دكتور صلاح مرزوق',
       'serum ig g': 'معمل دكتور صلاح مرزوق',
       'serum igg': 'معمل دكتور صلاح مرزوق',
       'igm immunoglobulin': 'معمل دكتور صلاح مرزوق',
       'rubella igg': 'معمل دكتور صلاح مرزوق',
+      'rubell igg': 'معمل دكتور صلاح مرزوق',
       'rubella igm': 'معمل دكتور صلاح مرزوق',
       'toxoplasma igg': 'معمل دكتور صلاح مرزوق',
       'toxoplasma igm': 'معمل دكتور صلاح مرزوق',
@@ -150,6 +148,7 @@
       'afp': 'معمل سموحة',
       'a ds d n a': 'معمل سموحة',
       'anti dsdna': 'معمل سموحة',
+      'anti double stranaded dna titer': 'معمل سموحة',
 
       // 5. معمل انطونيادس
       'l h (luteinising hormone)': 'معمل انطونيادس',
@@ -161,7 +160,10 @@
 
       // 6. معمل ياسر الدويك
       'small biopsy': 'معمل ياسر الدويك',
+      'large biopsy': 'معمل ياسر الدويك',
       'cytology (pleural fluid)': 'معمل ياسر الدويك',
+      'cytology (others)': 'معمل ياسر الدويك',
+      'cytology (csf)': 'معمل ياسر الدويك',
       'whole organ': 'معمل ياسر الدويك',
       'medium sized boipsy': 'معمل ياسر الدويك',
       'medium sized biopsy': 'معمل ياسر الدويك',
@@ -184,7 +186,7 @@
       NORMALIZED_MAPPING[cleanStr(k)] = lab;
     }
 
-    // تعيين التاريخ تلقائياً بصيغة اليوم
+    // التاريخ الافتراضي
     const now = new Date();
     const day = String(now.getDate()).padStart(2, '0');
     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -208,84 +210,74 @@
         const workbook = XLSX.read(data, { type: 'array' });
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
 
-        // قراءة الشيت كمصفوفة ثنائية الأبعاد لتفادي مشكلة الصفوف الفارغة في البداية
-        const rawGrid = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
-
-        processMatrixData(rawGrid);
+        // قراءة الملف كصفوف خام
+        const grid = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+        processMatrixData(grid);
       };
       reader.readAsArrayBuffer(file);
     }
 
     function processMatrixData(grid) {
       formsContainer.innerHTML = '';
+      if (!grid || grid.length === 0) return;
 
-      if (!grid || grid.length === 0) {
-        showNoDataMessage();
-        return;
-      }
+      // 1. العثور على الصف الحقيقي الذي يحتوي على عمود Product (الصف رقم 4 في الشيت)
+      let headerRowIndex = -1;
+      let colMap = { code: 0, name: 2, product: 4, techNotes: 7 };
 
-      // 1. الكشف الذكي عن سطر العناوين وتحديد موضع كل عمود
-      let headerIdx = -1;
-      let colMap = { product: -1, technical: -1, name: -1, age: -1, id: -1, note: -1 };
-
-      for (let r = 0; r < Math.min(grid.length, 25); r++) {
+      for (let r = 0; r < Math.min(grid.length, 15); r++) {
         const row = grid[r];
         if (!Array.isArray(row)) continue;
 
+        let foundProduct = false;
+        let foundCode = false;
+
         row.forEach((cell, idx) => {
           const val = cleanStr(cell);
-          if (['product', 'products', 'test', 'item', 'service', 'اسمتحليل', 'التحليل', 'فحص'].some(k => val.includes(k))) colMap.product = idx;
-          if (['technical', 'tech', 'technotes', 'technician', 'فني'].some(k => val.includes(k))) colMap.technical = idx;
-          if (['name', 'patient', 'patientname', 'اسمالمريض', 'المريض'].some(k => val.includes(k))) colMap.name = idx;
-          if (['age', 'السن', 'العمر'].some(k => val.includes(k))) colMap.age = idx;
-          if (['id', 'mrn', 'barcode', 'patientid', 'الرقمالطبي', 'الباركود'].some(k => val.includes(k))) colMap.id = idx;
-          if (['note', 'notes', 'ملاحظات'].some(k => val.includes(k)) && colMap.technical !== idx) colMap.note = idx;
+          if (val === 'product') { colMap.product = idx; foundProduct = true; }
+          if (val === 'code') { colMap.code = idx; foundCode = true; }
+          if (val === 'name') { colMap.name = idx; }
+          if (val === 'technotes' || val === 'technical') { colMap.techNotes = idx; }
         });
 
-        // إذا عثرنا على عمود التحليل أو عمود المريض نعتمد هذا الصف كترويسة
-        if (colMap.product !== -1 || colMap.name !== -1) {
-          headerIdx = r;
+        // الصف المطلوب هو الذي يجمع بين كلمة Code و Product
+        if (foundProduct || foundCode) {
+          headerRowIndex = r;
           break;
         }
       }
 
-      // فحص بديل تلقائي في حال كان الشيت بدون رؤوس أعمدة واضحة
-      if (colMap.product === -1) {
-        const maxCols = Math.max(...grid.slice(0, 10).map(r => r.length));
-        for (let c = 0; c < maxCols; c++) {
-          let testMatchCount = 0;
-          for (let r = 0; r < Math.min(grid.length, 30); r++) {
-            const val = cleanStr(grid[r][c]);
-            if (val && Object.keys(NORMALIZED_MAPPING).some(k => val.includes(k) || k.includes(val))) {
-              testMatchCount++;
-            }
-          }
-          if (testMatchCount >= 2) {
-            colMap.product = c;
-            break;
-          }
-        }
-      }
+      // إذا لم يعثر على الترويسة بالاسم، يعتمد المواضع الافتراضية لشيت Dotcare / PatientServices
+      const startRow = headerRowIndex !== -1 ? headerRowIndex + 1 : 4;
 
-      const startRow = headerIdx !== -1 ? headerIdx + 1 : 0;
       const groupedByLab = {};
       let transferredCount = 0;
       let skippedCount = 0;
       let scannedTotal = 0;
 
+      // متغيرات لتوريث كود واسم المريض في حال كانت الخلايا التالية مدمجة أو فارغة
+      let currentPatientCode = '';
+      let currentPatientName = '';
+
       for (let r = startRow; r < grid.length; r++) {
         const row = grid[r];
         if (!row || row.length === 0) continue;
 
+        const rowCode = String(row[colMap.code] || '').trim();
+        const rowName = String(row[colMap.name] || '').trim();
+        const rawProduct = String(row[colMap.product] || '').trim();
+        const rawTechNotes = String(row[colMap.techNotes] || '').trim();
+
+        // تحديث بيانات المريض عند توفرها في أول سطر
+        if (rowCode !== '') currentPatientCode = rowCode;
+        if (rowName !== '') currentPatientName = rowName;
+
+        if (rawProduct === '') continue;
         scannedTotal++;
 
-        const rawProduct = colMap.product !== -1 ? String(row[colMap.product] || '').trim() : '';
-        const technicalNotes = colMap.technical !== -1 ? String(row[colMap.technical] || '').trim() : '';
         const normProduct = cleanStr(rawProduct);
 
-        if (!normProduct) continue;
-
-        // مطابقة اسم التحليل بالمعمل التابع له
+        // مطابقة التحليل مع المعمل
         let targetLab = NORMALIZED_MAPPING[normProduct];
         if (!targetLab && normProduct.length > 3) {
           for (let [k, lab] of Object.entries(NORMALIZED_MAPPING)) {
@@ -297,16 +289,16 @@
         }
 
         if (targetLab) {
-          // الشرط الصارم: خانة technical يجب أن تكون خالية تماماً
-          if (technicalNotes === '') {
+          // الشرط الإلزامي: خانة Tech Notes فارغة تماماً
+          if (rawTechNotes === '') {
             if (!groupedByLab[targetLab]) groupedByLab[targetLab] = [];
 
             groupedByLab[targetLab].push({
-              name: colMap.name !== -1 ? String(row[colMap.name] || '').trim() : '',
-              age: colMap.age !== -1 ? String(row[colMap.age] || '').trim() : '',
-              id: colMap.id !== -1 ? String(row[colMap.id] || '').trim() : '',
+              name: currentPatientName,
+              id: currentPatientCode,
+              age: '', // غير متوفر في شيت الخدمات
               test: rawProduct,
-              note: colMap.note !== -1 ? String(row[colMap.note] || '').trim() : ''
+              note: ''
             });
             transferredCount++;
           } else {
@@ -318,11 +310,19 @@
       const labNames = Object.keys(groupedByLab);
 
       if (labNames.length === 0) {
-        showNoDataMessage();
+        printBtn.disabled = true;
+        statsSummary.classList.add('hidden');
+        formsContainer.innerHTML = `
+          <div class="bg-amber-50 border border-amber-200 text-amber-800 text-center p-8 rounded-xl shadow-sm">
+            <span class="text-4xl block mb-2">📋</span>
+            <p class="text-xl font-bold">لا يوجد Lab To Lab</p>
+            <p class="text-xs text-amber-600 mt-1">لم يتم العثور على أي تحاليل مطابقة لقائمة المعامل الخارجية أو أن جميع العينات بها ملاحظات فنية.</p>
+          </div>
+        `;
         return;
       }
 
-      // تفعيل زر الطباعة وعرض الإحصائيات
+      // إظهار الإحصائيات وتفعيل زر الطباعة
       statsSummary.classList.remove('hidden');
       document.getElementById('totalCount').innerText = scannedTotal;
       document.getElementById('transferredCount').innerText = transferredCount;
@@ -330,24 +330,12 @@
       document.getElementById('skippedCount').innerText = skippedCount;
       printBtn.disabled = false;
 
-      // إنشاء صفحة لكل معمل
+      // إنشاء صفحة لكل معمل محول إليه
       labNames.forEach(lab => {
         const records = groupedByLab[lab];
         const page = renderOfficialLabForm(lab, records);
         formsContainer.appendChild(page);
       });
-    }
-
-    function showNoDataMessage() {
-      printBtn.disabled = true;
-      statsSummary.classList.add('hidden');
-      formsContainer.innerHTML = `
-        <div class="bg-amber-50 border border-amber-200 text-amber-800 text-center p-8 rounded-xl shadow-sm">
-          <span class="text-4xl block mb-2">📋</span>
-          <p class="text-xl font-bold">لا يوجد Lab To Lab</p>
-          <p class="text-xs text-amber-600 mt-1">لم يتم العثور على تحاليل مسجلة لمعامل خارجية أو أن جميع العينات مدون بها ملاحظات technical.</p>
-        </div>
-      `;
     }
 
     function renderOfficialLabForm(labName, records) {
@@ -360,7 +348,7 @@
       const tempOut = document.getElementById('tempOut').value;
       const tempIn = document.getElementById('tempIn').value;
 
-      // تجميع تحاليل المريض المتعددة تحت نفس السجل
+      // تجميع تحاليل المريض الواحد تحت بعضها
       const groupedPatients = [];
       const patientMap = {};
 
@@ -384,7 +372,6 @@
       groupedPatients.forEach(patient => {
         patient.tests.forEach((t, tIdx) => {
           if (tIdx === 0) {
-            // السطر الأول: بيانات المريض كاملة
             rowsHtml += `
               <tr class="text-xs text-slate-900">
                 <td class="text-center font-bold p-1">${indexCounter++}</td>
@@ -396,7 +383,6 @@
               </tr>
             `;
           } else {
-            // الأسطر التالية لنفس المريض: خانات المريض فارغة واسم التحليل فقط
             rowsHtml += `
               <tr class="text-xs text-slate-900">
                 <td class="text-center p-1"></td>
@@ -411,8 +397,8 @@
         });
       });
 
-      // إضافة أسطر فارغة إضافية كالمعتاد في النماذج الورقية
-      for (let i = 0; i < 4; i++) {
+      // إضافة أسطر فارغة للطوارئ
+      for (let i = 0; i < 3; i++) {
         rowsHtml += `
           <tr class="h-6">
             <td class="p-1"></td><td class="p-1"></td><td class="p-1"></td><td class="p-1"></td><td class="p-1"></td><td class="p-1"></td>
@@ -420,13 +406,9 @@
         `;
       }
 
-      // هيكل النموذج الرسمي المتطابق مع ورقة أندلسية الشلالات
       page.innerHTML = `
         <div class="space-y-4">
-
-          <!-- الترويسة والشعار الرسمي -->
           <div class="flex justify-between items-center pb-2">
-            <!-- شعار أندلسية -->
             <div class="flex items-center gap-2">
               <svg class="w-10 h-10 text-emerald-700" viewBox="0 0 100 100" fill="currentColor">
                 <path d="M50 15 C35 35 20 40 10 50 C25 55 40 45 50 15 Z" fill="#047857"/>
@@ -439,14 +421,10 @@
                 <p class="text-[9px] text-slate-500 font-semibold tracking-tighter">AL SHALALAT HOSPITAL</p>
               </div>
             </div>
-
-            <!-- عنوان النموذج -->
             <h2 class="text-base font-bold text-slate-800 text-center flex-1">Lab to lab form</h2>
-
             <div class="w-24"></div>
           </div>
 
-          <!-- جدول بيانات المعمل ومسئولي الإرسال -->
           <table class="form-table w-full text-xs text-right mb-4">
             <tr>
               <td class="bg-slate-100 font-bold w-[22%] p-1.5">اسم المعمل المرسل اليه</td>
@@ -474,7 +452,6 @@
             </tr>
           </table>
 
-          <!-- جدول الحالات والتحاليل -->
           <table class="form-table w-full text-right">
             <thead>
               <tr class="bg-slate-100 text-xs font-bold text-slate-900">
@@ -491,13 +468,11 @@
             </tbody>
           </table>
 
-          <!-- تذييل الصفحة الرسمي -->
           <div class="pt-6 flex justify-between items-center text-[10px] text-slate-500 font-mono">
             <div></div>
             <div>Page 1 of 1</div>
             <div>AMS.EG.LAB.004.F.1 V1</div>
           </div>
-
         </div>
       `;
 

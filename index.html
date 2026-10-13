@@ -2,10 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>Lab to Lab Manifest Generator</title>
-  <!-- Tailwind CSS -->
+  <title>Lab to Lab Form Generator - Andalusia Hospitals</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- SheetJS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <style>
@@ -16,93 +14,110 @@
         page-break-after: always;
         break-after: page;
         margin: 0 !important;
-        padding: 15mm 10mm !important;
+        padding: 12mm 10mm !important;
         box-shadow: none !important;
         border: none !important;
         width: 100% !important;
       }
-      table { border-collapse: collapse !important; width: 100% !important; font-size: 11pt !important; }
-      th, td { border: 1px solid #000 !important; padding: 5px 8px !important; }
+      table { border-collapse: collapse !important; width: 100% !important; }
+      th, td { border: 1.2px solid #000 !important; padding: 4px 6px !important; }
     }
-    .form-table th, .form-table td { border: 1px solid #475569; }
+
+    .form-table th, .form-table td {
+      border: 1.2px solid #334155;
+    }
   </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 p-4 md:p-8 font-sans">
+<body class="bg-slate-100 min-h-screen text-slate-900 p-4 md:p-8 font-sans">
 
   <div class="max-w-5xl mx-auto space-y-6">
 
-    <!-- كارت التحكم وإدخال البيانات (يختفي عند الطباعة) -->
-    <div class="bg-white rounded-xl shadow-md border border-slate-200 p-6 no-print space-y-5">
+    <!-- لوحة التحكم وإعدادات الإرسال (تختفي عند الطباعة) -->
+    <div class="bg-white rounded-xl shadow border border-slate-200 p-6 no-print space-y-5">
       <div class="border-b pb-4 flex justify-between items-center">
         <div>
-          <h1 class="text-2xl font-bold text-slate-900">نظام استخراج نماذج Lab to Lab</h1>
-          <p class="text-xs text-slate-500 mt-1">مطابق للنموذج المعتمد: AMS.EG.LAB.004.F.1 V1</p>
+          <h1 class="text-xl font-bold text-slate-900">نظام استخراج نماذج Lab to Lab الرسمية</h1>
+          <p class="text-xs text-slate-500 mt-1">كود النموذج: AMS.EG.LAB.004.F.1 V1 | مستشفى أندلسية الشلالات</p>
         </div>
         <button id="printBtn" onclick="window.print()" disabled class="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white font-bold py-2.5 px-6 rounded-lg shadow transition flex items-center gap-2">
           <span>🖨️</span> طباعة / حفظ كـ PDF
         </button>
       </div>
 
-      <!-- إعدادات النموذج الثابتة -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- خانات ترويسة النموذج القابلة للتعديل -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">اسم المسلم:</label>
-          <input type="text" id="senderName" value="اندلسيه الشلالات(نورهان صلاح )" class="w-full text-sm border border-slate-300 rounded px-3 py-2 bg-slate-50">
+          <label class="block font-semibold text-slate-700 mb-1">اسم المسلم:</label>
+          <input type="text" id="senderName" value="اندلسيه الشلالات(نورهان صلاح )" class="w-full border rounded p-2 bg-slate-50">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">اسم المسئول عن توصيل العينات:</label>
-          <input type="text" id="courierName" placeholder="ا/ اسم المندوب" class="w-full text-sm border border-slate-300 rounded px-3 py-2">
+          <label class="block font-semibold text-slate-700 mb-1">مسئول توصيل العينات:</label>
+          <input type="text" id="courierName" value="ا/ عمار هندي" class="w-full border rounded p-2">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">تاريخ ووقت الخروج:</label>
-          <input type="text" id="dispatchDateTime" class="w-full text-sm border border-slate-300 rounded px-3 py-2">
+          <label class="block font-semibold text-slate-700 mb-1">تاريخ ووقت خروج العينات:</label>
+          <input type="text" id="dispatchDateTime" class="w-full border rounded p-2 font-mono">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">حرارة الخروج / الوصول:</label>
+          <div class="flex gap-1">
+            <input type="text" id="tempOut" value="7.0" title="عند الخروج" class="w-1/2 border rounded p-2 text-center font-bold">
+            <input type="text" id="tempIn" value="4.0" title="عند الوصول" class="w-1/2 border rounded p-2 text-center font-bold">
+          </div>
         </div>
       </div>
 
-      <!-- رفع الملف -->
+      <!-- منطقة رفع الملف -->
       <div>
-        <label class="cursor-pointer flex flex-col items-center justify-center border-2 border-dashed border-blue-400 bg-blue-50/50 hover:bg-blue-50 py-6 rounded-xl transition">
+        <label class="cursor-pointer flex flex-col items-center justify-center border-2 border-dashed border-blue-400 bg-blue-50/40 hover:bg-blue-50 py-5 rounded-xl transition">
           <span class="text-3xl mb-1">📊</span>
           <span class="text-sm font-bold text-blue-700">اضغط لاختيار شيت الإكسيل (Excel Sheet)</span>
-          <span class="text-xs text-slate-400 mt-1">يدعم ملفات .xlsx و .xls</span>
+          <span class="text-xs text-slate-400 mt-1">يتم الكشف التلقائي عن الأعمدة وتصنيف كل معمل في فورمة مستقلة</span>
           <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden">
         </label>
       </div>
 
-      <!-- شريط الإحصائيات -->
+      <!-- ملخص الإحصائيات -->
       <div id="statsSummary" class="hidden text-xs bg-slate-50 border p-3 rounded-lg flex justify-around font-medium text-slate-700">
-        <div>إجمالي السجلات بالشيت: <span id="totalCount" class="font-bold text-slate-900">0</span></div>
-        <div>المحولة خارجياً: <span id="transferredCount" class="font-bold text-emerald-600">0</span></div>
-        <div>المعامل المحول إليها: <span id="labsCount" class="font-bold text-blue-600">0</span></div>
-        <div>مستبعد (يوجد ملاحظة technical): <span id="skippedCount" class="font-bold text-amber-600">0</span></div>
+        <div>إجمالي السجلات المفحوصة: <span id="totalCount" class="font-bold text-slate-900">0</span></div>
+        <div>عينات Lab to Lab المقبولة: <span id="transferredCount" class="font-bold text-emerald-600">0</span></div>
+        <div>عدد المعامل الخارجية: <span id="labsCount" class="font-bold text-blue-600">0</span></div>
+        <div>مستبعدة (يوجد ملاحظات technical): <span id="skippedCount" class="font-bold text-amber-600">0</span></div>
       </div>
     </div>
 
-    <!-- مكان عرض الكشوفات أو التنبيه -->
+    <!-- منطقة عرض النماذج المجهزة للطباعة -->
     <div id="formsContainer" class="space-y-8"></div>
 
   </div>
 
   <script>
-    // 1. خريطة التحاليل والمعامل
+    // خريطة المعامل والتحاليل المعتمدة
     const RAW_TEST_MAPPING = {
-      // معمل دكتور صلاح مرزوق
-      'igm immunoglobulin': 'معمل دكتور صلاح مرزوق',
-      'serum ig g': 'معمل دكتور صلاح مرزوق',
-      'serum igg': 'معمل دكتور صلاح مرزوق',
-      'ace (angiotensin converting enzyme)': 'معمل دكتور صلاح مرزوق',
-      'a.m.a': 'معمل دكتور صلاح مرزوق',
-      'homocystien': 'معمل دكتور صلاح مرزوق',
-      'homocysteine': 'معمل دكتور صلاح مرزوق',
-      'h. pylori iga in serum': 'معمل دكتور صلاح مرزوق',
+      // 1. معمل دكتور صلاح مرزوق
+      'anti cardiolipin igg': 'معمل دكتور صلاح مرزوق',
+      'anti cardiolipin igm': 'معمل دكتور صلاح مرزوق',
       'antithrombin iii': 'معمل دكتور صلاح مرزوق',
       'protein c': 'معمل دكتور صلاح مرزوق',
       'protein s': 'معمل دكتور صلاح مرزوق',
+      'homocystien': 'معمل دكتور صلاح مرزوق',
+      'homocysteine': 'معمل دكتور صلاح مرزوق',
+      'a.m.a': 'معمل دكتور صلاح مرزوق',
+      'a.ma': 'معمل دكتور صلاح مرزوق',
+      'ama': 'معمل دكتور صلاح مرزوق',
+      'serum ig g': 'معمل دكتور صلاح مرزوق',
+      'serum igg': 'معمل دكتور صلاح مرزوق',
+      'igm immunoglobulin': 'معمل دكتور صلاح مرزوق',
+      'rubella igg': 'معمل دكتور صلاح مرزوق',
+      'rubella igm': 'معمل دكتور صلاح مرزوق',
+      'toxoplasma igg': 'معمل دكتور صلاح مرزوق',
+      'toxoplasma igm': 'معمل دكتور صلاح مرزوق',
+      'ace (angiotensin converting enzyme)': 'معمل دكتور صلاح مرزوق',
+      'h. pylori iga in serum': 'معمل دكتور صلاح مرزوق',
       'lupus anticoagulant': 'معمل دكتور صلاح مرزوق',
-      'anti - cardiolipin igm': 'معمل دكتور صلاح مرزوق',
-      'anti - cardiolipin igg': 'معمل دكتور صلاح مرزوق',
       'lipoprotein (a)': 'معمل دكتور صلاح مرزوق',
       'a.sm.a': 'معمل دكتور صلاح مرزوق',
+      'asma': 'معمل دكتور صلاح مرزوق',
       'sla ab (soluble liver ag auto ab)': 'معمل دكتور صلاح مرزوق',
       'ebv ab igm': 'معمل دكتور صلاح مرزوق',
       'aldosterone renin ratio': 'معمل دكتور صلاح مرزوق',
@@ -110,12 +125,13 @@
       'anti dgp igg': 'معمل دكتور صلاح مرزوق',
       'anti dgp iga': 'معمل دكتور صلاح مرزوق',
 
-      // معمل المبره
+      // 2. معمل المبره
       'immunofixation': 'معمل المبره',
       'protein electrophoresis': 'معمل المبره',
       'p c r for tb': 'معمل المبره',
+      'pcr for tb': 'معمل المبره',
 
-      // معمل الانصارى
+      // 3. معمل الانصارى
       'vitamin a': 'معمل الانصارى',
       'vitamin e': 'معمل الانصارى',
       'serum selenium': 'معمل الانصارى',
@@ -124,14 +140,18 @@
       'vitamin b6': 'معمل الانصارى',
       'vitamin b2': 'معمل الانصارى',
 
-      // معمل سموحة
+      // 4. معمل سموحة
       'c.e.a.': 'معمل سموحة',
+      'cea': 'معمل سموحة',
       'ca 15.3': 'معمل سموحة',
       'ca 15-3': 'معمل سموحة',
       'alpha-fetoprotein(afp)': 'معمل سموحة',
+      'alpha-fetoprotein (afp)': 'معمل سموحة',
+      'afp': 'معمل سموحة',
       'a ds d n a': 'معمل سموحة',
+      'anti dsdna': 'معمل سموحة',
 
-      // معمل انطونيادس
+      // 5. معمل انطونيادس
       'l h (luteinising hormone)': 'معمل انطونيادس',
       'f s h (follicle stimulating hormone)': 'معمل انطونيادس',
       'l h': 'معمل انطونيادس',
@@ -139,7 +159,7 @@
       'f s h': 'معمل انطونيادس',
       'fsh': 'معمل انطونيادس',
 
-      // معمل ياسر الدويك
+      // 6. معمل ياسر الدويك
       'small biopsy': 'معمل ياسر الدويك',
       'cytology (pleural fluid)': 'معمل ياسر الدويك',
       'whole organ': 'معمل ياسر الدويك',
@@ -151,24 +171,25 @@
       'immunohistochemistry for cd 10': 'معمل ياسر الدويك'
     };
 
-    // دالة لتنظيف النص تماماً من أي مسافات، نقاط، أو رموز لضمان التطابق
-    function normalize(str) {
+    function cleanStr(str) {
       return String(str || '')
-        .replace(/\u00a0/g, ' ') // إزالة المسافات الخفية
+        .replace(/\u00a0/g, ' ')
         .toLowerCase()
-        .replace(/[^a-z0-9\u0600-\u06ff]/gi, '') // إبقاء الحروف والأرقام فقط
+        .replace(/[^a-z0-9\u0600-\u06ff]/gi, '')
         .trim();
     }
 
-    // بناء خريطة معالجة مسبقة للمطابقة الفورية
     const NORMALIZED_MAPPING = {};
     for (let [k, lab] of Object.entries(RAW_TEST_MAPPING)) {
-      NORMALIZED_MAPPING[normalize(k)] = lab;
+      NORMALIZED_MAPPING[cleanStr(k)] = lab;
     }
 
-    // إعداد التاريخ والوقت
+    // تعيين التاريخ تلقائياً بصيغة اليوم
     const now = new Date();
-    document.getElementById('dispatchDateTime').value = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    document.getElementById('dispatchDateTime').value = `${day}-${month}-${year}`;
 
     const fileInput = document.getElementById('excelFile');
     const printBtn = document.getElementById('printBtn');
@@ -187,66 +208,88 @@
         const workbook = XLSX.read(data, { type: 'array' });
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
 
-        // 1. قراءة الملف كمصفوفة صفوف للبحث التلقائي عن السطر الحقيقي للترويسة
-        const rawRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
-        
-        let headerRowIndex = 0;
-        for (let i = 0; i < Math.min(rawRows.length, 15); i++) {
-          const rowText = rawRows[i].map(c => normalize(c)).join(' ');
-          // البحث عن كلمات دالة تدل على بداية الجدول
-          if (rowText.includes('product') || rowText.includes('patient') || rowText.includes('mrn') || rowText.includes('barcode') || rowText.includes('test')) {
-            headerRowIndex = i;
-            break;
-          }
-        }
+        // قراءة الشيت كمصفوفة ثنائية الأبعاد لتفادي مشكلة الصفوف الفارغة في البداية
+        const rawGrid = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
 
-        // 2. تحويل البيانات لكائنات بالاعتماد على سطر الترويسة المكتشف
-        const rows = XLSX.utils.sheet_to_json(firstSheet, { range: headerRowIndex, defval: '' });
-
-        processAndRender(rows);
+        processMatrixData(rawGrid);
       };
       reader.readAsArrayBuffer(file);
     }
 
-    // دالة مرنة للغاية للبحث عن قيمة العمود حتى لو اختلف اسمه قليلاً
-    function getVal(row, possibleKeys) {
-      for (let k of Object.keys(row)) {
-        const cleanK = normalize(k);
-        for (let target of possibleKeys) {
-          if (cleanK.includes(normalize(target))) {
-            return String(row[k] || '').trim();
+    function processMatrixData(grid) {
+      formsContainer.innerHTML = '';
+
+      if (!grid || grid.length === 0) {
+        showNoDataMessage();
+        return;
+      }
+
+      // 1. الكشف الذكي عن سطر العناوين وتحديد موضع كل عمود
+      let headerIdx = -1;
+      let colMap = { product: -1, technical: -1, name: -1, age: -1, id: -1, note: -1 };
+
+      for (let r = 0; r < Math.min(grid.length, 25); r++) {
+        const row = grid[r];
+        if (!Array.isArray(row)) continue;
+
+        row.forEach((cell, idx) => {
+          const val = cleanStr(cell);
+          if (['product', 'products', 'test', 'item', 'service', 'اسمتحليل', 'التحليل', 'فحص'].some(k => val.includes(k))) colMap.product = idx;
+          if (['technical', 'tech', 'technotes', 'technician', 'فني'].some(k => val.includes(k))) colMap.technical = idx;
+          if (['name', 'patient', 'patientname', 'اسمالمريض', 'المريض'].some(k => val.includes(k))) colMap.name = idx;
+          if (['age', 'السن', 'العمر'].some(k => val.includes(k))) colMap.age = idx;
+          if (['id', 'mrn', 'barcode', 'patientid', 'الرقمالطبي', 'الباركود'].some(k => val.includes(k))) colMap.id = idx;
+          if (['note', 'notes', 'ملاحظات'].some(k => val.includes(k)) && colMap.technical !== idx) colMap.note = idx;
+        });
+
+        // إذا عثرنا على عمود التحليل أو عمود المريض نعتمد هذا الصف كترويسة
+        if (colMap.product !== -1 || colMap.name !== -1) {
+          headerIdx = r;
+          break;
+        }
+      }
+
+      // فحص بديل تلقائي في حال كان الشيت بدون رؤوس أعمدة واضحة
+      if (colMap.product === -1) {
+        const maxCols = Math.max(...grid.slice(0, 10).map(r => r.length));
+        for (let c = 0; c < maxCols; c++) {
+          let testMatchCount = 0;
+          for (let r = 0; r < Math.min(grid.length, 30); r++) {
+            const val = cleanStr(grid[r][c]);
+            if (val && Object.keys(NORMALIZED_MAPPING).some(k => val.includes(k) || k.includes(val))) {
+              testMatchCount++;
+            }
+          }
+          if (testMatchCount >= 2) {
+            colMap.product = c;
+            break;
           }
         }
       }
-      return '';
-    }
 
-    function processAndRender(rows) {
-      formsContainer.innerHTML = '';
-      
+      const startRow = headerIdx !== -1 ? headerIdx + 1 : 0;
       const groupedByLab = {};
       let transferredCount = 0;
       let skippedCount = 0;
-      const sampleDetectedTests = [];
+      let scannedTotal = 0;
 
-      rows.forEach(row => {
-        // قراءة اسم التحليل من عمود Product أو Test
-        const rawProduct = getVal(row, ['product', 'test', 'item', 'service', 'اسم التحليل']);
-        if (rawProduct && sampleDetectedTests.length < 5) {
-          sampleDetectedTests.push(rawProduct);
-        }
+      for (let r = startRow; r < grid.length; r++) {
+        const row = grid[r];
+        if (!row || row.length === 0) continue;
 
-        // قراءة خانة الملاحظات الفنية Technical
-        const technicalNotes = getVal(row, ['technical', 'technician', 'tech note']);
+        scannedTotal++;
 
-        // التحقق من المعمل باستخدام الفحص الذكي
-        const normProduct = normalize(rawProduct);
+        const rawProduct = colMap.product !== -1 ? String(row[colMap.product] || '').trim() : '';
+        const technicalNotes = colMap.technical !== -1 ? String(row[colMap.technical] || '').trim() : '';
+        const normProduct = cleanStr(rawProduct);
+
+        if (!normProduct) continue;
+
+        // مطابقة اسم التحليل بالمعمل التابع له
         let targetLab = NORMALIZED_MAPPING[normProduct];
-
-        // في حال كان اسم التحليل بالشيت يحتوي تفاصيل زيادة
         if (!targetLab && normProduct.length > 3) {
-          for (let [key, lab] of Object.entries(NORMALIZED_MAPPING)) {
-            if (normProduct.includes(key) || key.includes(normProduct)) {
+          for (let [k, lab] of Object.entries(NORMALIZED_MAPPING)) {
+            if (normProduct.includes(k) || k.includes(normProduct)) {
               targetLab = lab;
               break;
             }
@@ -254,59 +297,34 @@
         }
 
         if (targetLab) {
-          // التحقق من أن خانة technical خالية تماماً
+          // الشرط الصارم: خانة technical يجب أن تكون خالية تماماً
           if (technicalNotes === '') {
-            if (!groupedByLab[targetLab]) {
-              groupedByLab[targetLab] = [];
-            }
+            if (!groupedByLab[targetLab]) groupedByLab[targetLab] = [];
 
             groupedByLab[targetLab].push({
-              name: getVal(row, ['patient name', 'name', 'اسم المريض']),
-              age: getVal(row, ['age', 'السن', 'العمر']),
-              id: getVal(row, ['mrn', 'id', 'patient id', 'barcode', 'الرقم الطبي', 'الباركود']),
-              test: rawProduct.toUpperCase(),
-              note: getVal(row, ['note', 'notes', 'ملاحظات'])
+              name: colMap.name !== -1 ? String(row[colMap.name] || '').trim() : '',
+              age: colMap.age !== -1 ? String(row[colMap.age] || '').trim() : '',
+              id: colMap.id !== -1 ? String(row[colMap.id] || '').trim() : '',
+              test: rawProduct,
+              note: colMap.note !== -1 ? String(row[colMap.note] || '').trim() : ''
             });
             transferredCount++;
           } else {
             skippedCount++;
           }
         }
-      });
+      }
 
       const labNames = Object.keys(groupedByLab);
 
-      // في حال عدم العثور على نتائج
       if (labNames.length === 0) {
-        printBtn.disabled = true;
-        statsSummary.classList.add('hidden');
-        
-        // جلب أسماء الأعمدة لتسهيل فحص الشيت
-        const detectedColumns = rows.length > 0 ? Object.keys(rows[0]).join(' | ') : 'لم يتم العثور على أعمدة';
-
-        formsContainer.innerHTML = `
-          <div class="bg-amber-50 border border-amber-300 text-amber-900 p-6 rounded-xl shadow-sm space-y-3">
-            <div class="flex items-center gap-3">
-              <span class="text-3xl">📋</span>
-              <p class="text-xl font-bold">لا يوجد Lab To Lab</p>
-            </div>
-            <p class="text-xs text-amber-700">لم يطابق أي سجل شروط الخروج لمعمل خارجي مع فراغ خانة technical.</p>
-            
-            <!-- صندوق الفحص التقني التلقائي للشيت -->
-            <div class="bg-white/80 p-3 rounded-lg border border-amber-200 text-right text-xs font-mono space-y-1 text-slate-700">
-              <p class="font-bold text-slate-900">🔍 تقرير فحص الشيت التلقائي:</p>
-              <p>• إجمالي الصفوف المفحوصة: ${rows.length}</p>
-              <p>• أسماء الأعمدة المكتشفة: <span class="text-blue-700 font-bold">${detectedColumns || 'فارغة'}</span></p>
-              <p>• عينة من أسماء التحاليل المقروءة: <span class="text-emerald-700 font-bold">${sampleDetectedTests.join(' , ') || 'لم تُقرأ أي تحاليل'}</span></p>
-            </div>
-          </div>
-        `;
+        showNoDataMessage();
         return;
       }
 
-      // إظهار الإحصائيات
+      // تفعيل زر الطباعة وعرض الإحصائيات
       statsSummary.classList.remove('hidden');
-      document.getElementById('totalCount').innerText = rows.length;
+      document.getElementById('totalCount').innerText = scannedTotal;
       document.getElementById('transferredCount').innerText = transferredCount;
       document.getElementById('labsCount').innerText = labNames.length;
       document.getElementById('skippedCount').innerText = skippedCount;
@@ -314,26 +332,40 @@
 
       // إنشاء صفحة لكل معمل
       labNames.forEach(lab => {
-        const labRecords = groupedByLab[lab];
-        const pageElem = createLabFormPage(lab, labRecords);
-        formsContainer.appendChild(pageElem);
+        const records = groupedByLab[lab];
+        const page = renderOfficialLabForm(lab, records);
+        formsContainer.appendChild(page);
       });
     }
 
-    function createLabFormPage(labName, records) {
+    function showNoDataMessage() {
+      printBtn.disabled = true;
+      statsSummary.classList.add('hidden');
+      formsContainer.innerHTML = `
+        <div class="bg-amber-50 border border-amber-200 text-amber-800 text-center p-8 rounded-xl shadow-sm">
+          <span class="text-4xl block mb-2">📋</span>
+          <p class="text-xl font-bold">لا يوجد Lab To Lab</p>
+          <p class="text-xs text-amber-600 mt-1">لم يتم العثور على تحاليل مسجلة لمعامل خارجية أو أن جميع العينات مدون بها ملاحظات technical.</p>
+        </div>
+      `;
+    }
+
+    function renderOfficialLabForm(labName, records) {
       const page = document.createElement('div');
-      page.className = 'lab-page bg-white p-6 rounded-xl shadow-md border border-slate-200';
+      page.className = 'lab-page bg-white p-8 rounded-xl shadow border border-slate-200';
 
       const sender = document.getElementById('senderName').value;
-      const courier = document.getElementById('courierName').value || 'ا/ ............................';
-      const dispatchTime = document.getElementById('dispatchDateTime').value;
+      const courier = document.getElementById('courierName').value;
+      const dispatchDate = document.getElementById('dispatchDateTime').value;
+      const tempOut = document.getElementById('tempOut').value;
+      const tempIn = document.getElementById('tempIn').value;
 
-      // تجميع تحاليل المريض الواحد تحت بعضها
+      // تجميع تحاليل المريض المتعددة تحت نفس السجل
       const groupedPatients = [];
       const patientMap = {};
 
       records.forEach(rec => {
-        const key = (rec.id + '_' + rec.name).toLowerCase();
+        const key = (rec.id || rec.name).toLowerCase();
         if (!patientMap[key]) {
           patientMap[key] = {
             name: rec.name,
@@ -350,92 +382,123 @@
       let indexCounter = 1;
 
       groupedPatients.forEach(patient => {
-        patient.tests.forEach((t, tIndex) => {
-          if (tIndex === 0) {
+        patient.tests.forEach((t, tIdx) => {
+          if (tIdx === 0) {
+            // السطر الأول: بيانات المريض كاملة
             rowsHtml += `
-              <tr class="text-xs">
-                <td class="text-center font-bold">${indexCounter++}</td>
-                <td class="font-semibold text-slate-900">${patient.name}</td>
-                <td class="text-center">${patient.age}</td>
-                <td class="text-center font-mono font-bold">${patient.id}</td>
-                <td class="font-semibold text-blue-900">${t.test}</td>
-                <td class="text-center text-slate-500">${t.note || ''}</td>
+              <tr class="text-xs text-slate-900">
+                <td class="text-center font-bold p-1">${indexCounter++}</td>
+                <td class="font-bold text-right p-1.5">${patient.name}</td>
+                <td class="text-center font-semibold p-1">${patient.age}</td>
+                <td class="text-center font-mono font-bold p-1">${patient.id}</td>
+                <td class="font-bold text-left px-2 py-1">${t.test}</td>
+                <td class="text-center p-1 text-slate-600">${t.note || ''}</td>
               </tr>
             `;
           } else {
+            // الأسطر التالية لنفس المريض: خانات المريض فارغة واسم التحليل فقط
             rowsHtml += `
-              <tr class="text-xs">
-                <td class="text-center"></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td class="font-semibold text-blue-900">${t.test}</td>
-                <td class="text-center text-slate-500">${t.note || ''}</td>
+              <tr class="text-xs text-slate-900">
+                <td class="text-center p-1"></td>
+                <td class="p-1.5"></td>
+                <td class="p-1"></td>
+                <td class="p-1"></td>
+                <td class="font-bold text-left px-2 py-1">${t.test}</td>
+                <td class="text-center p-1 text-slate-600">${t.note || ''}</td>
               </tr>
             `;
           }
         });
       });
 
-      // إضافة أسطر فارغة إضافية للحالات المكتوبة يدوياً
-      for (let i = 0; i < 3; i++) {
+      // إضافة أسطر فارغة إضافية كالمعتاد في النماذج الورقية
+      for (let i = 0; i < 4; i++) {
         rowsHtml += `
           <tr class="h-6">
-            <td></td><td></td><td></td><td></td><td></td><td></td>
+            <td class="p-1"></td><td class="p-1"></td><td class="p-1"></td><td class="p-1"></td><td class="p-1"></td><td class="p-1"></td>
           </tr>
         `;
       }
 
+      // هيكل النموذج الرسمي المتطابق مع ورقة أندلسية الشلالات
       page.innerHTML = `
-        <div class="mb-4">
-          <div class="flex justify-between items-center border-b pb-2 mb-2">
-            <h2 class="text-lg font-bold text-slate-800">Lab to lab form</h2>
-            <span class="text-xs font-mono text-slate-500">AMS.EG.LAB.004.F.1 V1</span>
+        <div class="space-y-4">
+
+          <!-- الترويسة والشعار الرسمي -->
+          <div class="flex justify-between items-center pb-2">
+            <!-- شعار أندلسية -->
+            <div class="flex items-center gap-2">
+              <svg class="w-10 h-10 text-emerald-700" viewBox="0 0 100 100" fill="currentColor">
+                <path d="M50 15 C35 35 20 40 10 50 C25 55 40 45 50 15 Z" fill="#047857"/>
+                <path d="M50 15 C65 35 80 40 90 50 C75 55 60 45 50 15 Z" fill="#059669"/>
+                <path d="M50 30 C45 60 25 80 15 90 C35 85 55 70 50 30 Z" fill="#10b981"/>
+                <path d="M50 30 C55 60 75 80 85 90 C65 85 45 70 50 30 Z" fill="#34d399"/>
+              </svg>
+              <div>
+                <p class="text-xs font-black tracking-wider uppercase text-slate-800">ANDALUSIA</p>
+                <p class="text-[9px] text-slate-500 font-semibold tracking-tighter">AL SHALALAT HOSPITAL</p>
+              </div>
+            </div>
+
+            <!-- عنوان النموذج -->
+            <h2 class="text-base font-bold text-slate-800 text-center flex-1">Lab to lab form</h2>
+
+            <div class="w-24"></div>
           </div>
 
+          <!-- جدول بيانات المعمل ومسئولي الإرسال -->
           <table class="form-table w-full text-xs text-right mb-4">
             <tr>
-              <td class="bg-slate-50 font-bold w-1/4 p-1.5">اسم المعمل المرسل اليه</td>
-              <td class="font-bold text-blue-800 w-1/4 p-1.5">${labName}</td>
-              <td class="bg-slate-50 font-bold w-1/4 p-1.5">تاريخ ووقت خروج العينات</td>
-              <td class="w-1/4 p-1.5 font-mono">${dispatchTime}</td>
+              <td class="bg-slate-100 font-bold w-[22%] p-1.5">اسم المعمل المرسل اليه</td>
+              <td class="font-bold text-blue-900 w-[28%] p-1.5 text-center text-sm">${labName}</td>
+              <td class="bg-slate-100 font-bold w-[25%] p-1.5">تاريخ ووقت خروج العينات</td>
+              <td class="w-[25%] p-1.5 text-center font-mono font-bold">${dispatchDate}</td>
             </tr>
             <tr>
-              <td class="bg-slate-50 font-bold p-1.5">اسم المسلم</td>
-              <td class="p-1.5">${sender}</td>
-              <td class="bg-slate-50 font-bold p-1.5">وقت وصول العينات</td>
-              <td class="p-1.5">................................</td>
+              <td class="bg-slate-100 font-bold p-1.5">اسم المسلم</td>
+              <td class="p-1.5 text-center font-medium">${sender}</td>
+              <td class="bg-slate-100 font-bold p-1.5">وقت وصول العينات</td>
+              <td class="p-1.5 text-center text-slate-400">..............................</td>
             </tr>
             <tr>
-              <td class="bg-slate-50 font-bold p-1.5">المستلم</td>
-              <td class="p-1.5">................................</td>
-              <td class="bg-slate-50 font-bold p-1.5">اسم المسئول عن توصيل العينات</td>
-              <td class="p-1.5">${courier}</td>
+              <td class="bg-slate-100 font-bold p-1.5">المستلم</td>
+              <td class="p-1.5 text-center text-slate-400">..............................</td>
+              <td class="bg-slate-100 font-bold p-1.5">اسم المسئول عن توصيل العينات</td>
+              <td class="p-1.5 text-center font-bold">${courier}</td>
             </tr>
             <tr>
-              <td class="bg-slate-50 font-bold p-1.5">درجه الحراره عند الخروج من المعمل</td>
-              <td class="font-bold text-emerald-700 p-1.5">4 C</td>
-              <td class="bg-slate-50 font-bold p-1.5">درجه الحراره عند الوصول الى المعمل الخارجى</td>
-              <td class="p-1.5">................................</td>
+              <td class="bg-slate-100 font-bold p-1.5">درجه الحراره عند الخروج من المعمل</td>
+              <td class="p-1.5 text-center font-bold text-emerald-800">${tempOut} °C</td>
+              <td class="bg-slate-100 font-bold p-1.5">درجه الحراره عند الوصول الى المعمل الخارجى</td>
+              <td class="p-1.5 text-center font-bold text-slate-700">${tempIn} °C</td>
             </tr>
           </table>
-        </div>
 
-        <table class="form-table w-full text-right">
-          <thead>
-            <tr class="bg-slate-100 text-xs font-bold text-slate-800">
-              <th class="p-1.5 text-center w-8">#</th>
-              <th class="p-1.5 w-1/3">name</th>
-              <th class="p-1.5 text-center w-16">age</th>
-              <th class="p-1.5 text-center w-28">ID</th>
-              <th class="p-1.5">test</th>
-              <th class="p-1.5 w-24">note</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rowsHtml}
-          </tbody>
-        </table>
+          <!-- جدول الحالات والتحاليل -->
+          <table class="form-table w-full text-right">
+            <thead>
+              <tr class="bg-slate-100 text-xs font-bold text-slate-900">
+                <th class="p-1 text-center w-8">#</th>
+                <th class="p-1.5 w-1/3 text-center">name</th>
+                <th class="p-1 text-center w-14">age</th>
+                <th class="p-1 text-center w-28">ID</th>
+                <th class="p-1 text-center">test</th>
+                <th class="p-1 text-center w-20">note</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+
+          <!-- تذييل الصفحة الرسمي -->
+          <div class="pt-6 flex justify-between items-center text-[10px] text-slate-500 font-mono">
+            <div></div>
+            <div>Page 1 of 1</div>
+            <div>AMS.EG.LAB.004.F.1 V1</div>
+          </div>
+
+        </div>
       `;
 
       return page;

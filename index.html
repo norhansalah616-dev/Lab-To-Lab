@@ -2,11 +2,25 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lab to Lab Form Generator - Andalusia Hospitals</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <style>
+    /* منع تحديد النصوص والسحب في كافة أجزاء الصفحة */
+    body {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+    input, button {
+      -webkit-user-select: auto;
+      user-select: auto;
+    }
+
     @media print {
       .no-print { display: none !important; }
       body { background: white !important; padding: 0 !important; margin: 0 !important; }
@@ -25,7 +39,7 @@
     .form-table th, .form-table td { border: 1.2px solid #334155; }
   </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-900 p-4 md:p-8 font-sans">
+<body class="bg-slate-100 min-h-screen text-slate-900 p-4 md:p-8 font-sans" oncontextmenu="return false;" ondragstart="return false;" onselectstart="return false;">
 
   <div class="max-w-5xl mx-auto space-y-6">
 
@@ -41,6 +55,7 @@
         </button>
       </div>
 
+      <!-- خانات ترويسة النموذج -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
         <div>
           <label class="block font-semibold text-slate-700 mb-1">اسم المسلم:</label>
@@ -65,112 +80,287 @@
 
       <!-- منطقة رفع الملف -->
       <div>
-        <label class="cursor-pointer flex flex-col items-center justify-center border-2 border-dashed border-blue-400 bg-blue-50/40 hover:bg-blue-50 py-5 rounded-xl transition">
+        <label class="cursor-pointer flex flex-col items-center justify-center border-2 border-dashed border-emerald-400 bg-emerald-50/40 hover:bg-emerald-50 py-5 rounded-xl transition">
           <span class="text-3xl mb-1">📊</span>
-          <span class="text-sm font-bold text-blue-700">اضغط لاختيار شيت الإكسيل (Excel Sheet)</span>
-          <span class="text-xs text-slate-400 mt-1">يتم الفرز الآلي حسب المعامل الخارجية وتجهيز نماذج الطباعة مباشرة</span>
+          <span class="text-sm font-bold text-emerald-800">اضغط لاختيار شيت الإكسيل (Excel Sheet)</span>
+          <span class="text-xs text-slate-400 mt-1">توزيع آلي وشامل لجميع المعامل الخارجية المعتمدة</span>
           <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden">
         </label>
       </div>
 
       <!-- شريط الإحصائيات -->
       <div id="statsSummary" class="hidden text-xs bg-slate-50 border p-3 rounded-lg flex justify-around font-medium text-slate-700">
-        <div>إجمالي الحالات المفحوصة: <span id="totalCount" class="font-bold text-slate-900">0</span></div>
+        <div>إجمالي السجلات المفحوصة: <span id="totalCount" class="font-bold text-slate-900">0</span></div>
         <div>عينات Lab to Lab المقبولة: <span id="transferredCount" class="font-bold text-emerald-600">0</span></div>
-        <div>عدد المعامل الخارجية: <span id="labsCount" class="font-bold text-blue-600">0</span></div>
+        <div>عدد المعامل المحول إليها: <span id="labsCount" class="font-bold text-blue-600">0</span></div>
         <div>مستبعدة (يوجد ملاحظات technical): <span id="skippedCount" class="font-bold text-amber-600">0</span></div>
       </div>
     </div>
 
-    <!-- مكان عرض الكشوفات -->
+    <!-- منطقة عرض النماذج المجهزة للطباعة -->
     <div id="formsContainer" class="space-y-8"></div>
 
   </div>
 
   <script>
-    // خريطة المعامل والتحاليل المعتمدة
+    /* =========================================================================
+       1. طبقات حماية وقفل الشفرة المصدرية (Source Code Protection & Anti-Inspect)
+       ========================================================================= */
+    // تعطيل كليك يمين
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      return false;
+    });
+
+    // تعطيل جميع اختصارات الفحص والمطورين
+    document.addEventListener('keydown', function(e) {
+      // منع زر F12
+      if (e.key === 'F12' || e.keyCode === 123) {
+        e.preventDefault();
+        return false;
+      }
+      // منع Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C (فتح الـ DevTools)
+      if (e.ctrlKey && e.shiftKey && ['I', 'J', 'C', 'i', 'j', 'c'].includes(e.key)) {
+        e.preventDefault();
+        return false;
+      }
+      // منع Ctrl+U (عرض كود المصدر)
+      if (e.ctrlKey && (e.key === 'u' || e.key === 'U')) {
+        e.preventDefault();
+        return false;
+      }
+      // منع Ctrl+S (حفظ الصفحة محلياً)
+      if (e.ctrlKey && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    // مسح الكونسول دورياً لإخفاء أي أثر للبيانات
+    setInterval(function() {
+      console.clear();
+    }, 1500);
+
+
+    /* =========================================================================
+       2. قاعدة بيانات التحاليل وتوزيع المعامل
+       ========================================================================= */
     const RAW_TEST_MAPPING = {
-      // 1. معمل دكتور صلاح مرزوق
-      'anti cardiolipin igg': 'معمل دكتور صلاح مرزوق',
+      // ----------------- معمل انطونيادس -----------------
+      'f s h (follicle stimulating hormone)': 'معمل انطونيادس',
+      'fsh': 'معمل انطونيادس',
+      'f s h': 'معمل انطونيادس',
+      'l h (luteinising hormone)': 'معمل انطونيادس',
+      'lh': 'معمل انطونيادس',
+      'l h': 'معمل انطونيادس',
+
+      // ----------------- معمل رشدى -----------------
+      'tsh receptor antibodies': 'معمل رشدى',
+      'tsh receptor': 'معمل رشدى',
+      'tsh respetor': 'معمل رشدى',
+      'trab': 'معمل رشدى',
+      'vitamin b12 (cyanocobalamin)': 'معمل رشدى',
+      'vitamin b12': 'معمل رشدى',
+      'v.b12': 'معمل رشدى',
+      'vb12': 'معمل رشدى',
+      'b12': 'معمل رشدى',
+      'vit b12': 'معمل رشدى',
+
+      // ----------------- معمل دكتور صلاح مرزوق -----------------
+      'ama': 'معمل دكتور صلاح مرزوق',
+      'a.m.a': 'معمل دكتور صلاح مرزوق',
+      'acth (p.m)': 'معمل دكتور صلاح مرزوق',
+      'acth pm': 'معمل دكتور صلاح مرزوق',
+      'acth morning': 'معمل دكتور صلاح مرزوق',
+      'acth (morning)': 'معمل دكتور صلاح مرزوق',
+      'ana': 'معمل دكتور صلاح مرزوق',
+      'anti centromere': 'معمل دكتور صلاح مرزوق',
+      'anti - cardiolipin igm': 'معمل دكتور صلاح مرزوق',
       'anti cardiolipin igm': 'معمل دكتور صلاح مرزوق',
       'anti - cardiolipin igg': 'معمل دكتور صلاح مرزوق',
-      'anti - cardiolipin igm': 'معمل دكتور صلاح مرزوق',
-      'antithrombin iii': 'معمل دكتور صلاح مرزوق',
-      'protein c': 'معمل دكتور صلاح مرزوق',
-      'protein s': 'معمل دكتور صلاح مرزوق',
-      'homocystien': 'معمل دكتور صلاح مرزوق',
-      'homocysteine': 'معمل دكتور صلاح مرزوق',
-      'a.m.a': 'معمل دكتور صلاح مرزوق',
-      'ama': 'معمل دكتور صلاح مرزوق',
+      'anti cardiolipin igg': 'معمل دكتور صلاح مرزوق',
+      'anti - ssa (ro) ab': 'معمل دكتور صلاح مرزوق',
+      'anti ssa': 'معمل دكتور صلاح مرزوق',
+      'anti - ssb ( la ) ab': 'معمل دكتور صلاح مرزوق',
+      'anti ssb': 'معمل دكتور صلاح مرزوق',
+      'anti jo': 'معمل دكتور صلاح مرزوق',
+      'anti jo 1': 'معمل دكتور صلاح مرزوق',
+      'anti dgp iga': 'معمل دكتور صلاح مرزوق',
+      'anti dgp igg': 'معمل دكتور صلاح مرزوق',
+      'anti fasciola ab': 'معمل دكتور صلاح مرزوق',
+      'anti glutamic acid decarboxylase': 'معمل دكتور صلاح مرزوق',
+      'anti lkm (liver kidney microsome)': 'معمل دكتور صلاح مرزوق',
+      'anti lkm': 'معمل دكتور صلاح مرزوق',
+      'aldosterone renin ratio': 'معمل دكتور صلاح مرزوق',
+      'anti mullarian hormone (a.m.h)': 'معمل دكتور صلاح مرزوق',
+      'amh': 'معمل دكتور صلاح مرزوق',
+      'ati scl': 'معمل دكتور صلاح مرزوق',
+      'anti scl 70': 'معمل دكتور صلاح مرزوق',
+      'ammonia': 'معمل دكتور صلاح مرزوق',
+      'asca-iga': 'معمل دكتور صلاح مرزوق',
+      'asca-igg': 'معمل دكتور صلاح مرزوق',
+      'b2 glycoprotein igg': 'معمل دكتور صلاح مرزوق',
+      'b2 glycoprotein igm': 'معمل دكتور صلاح مرزوق',
+      'bicarbonate in serum': 'معمل دكتور صلاح مرزوق',
+      'brucella igm': 'معمل دكتور صلاح مرزوق',
+      'c - peptide': 'معمل دكتور صلاح مرزوق',
+      'c peptide': 'معمل دكتور صلاح مرزوق',
+      'c- anca': 'معمل دكتور صلاح مرزوق',
+      'c anca': 'معمل دكتور صلاح مرزوق',
+      'p- anca': 'معمل دكتور صلاح مرزوق',
+      'p anca': 'معمل دكتور صلاح مرزوق',
+      'calcium in urine': 'معمل دكتور صلاح مرزوق',
+      'ceruloplasmin': 'معمل دكتور صلاح مرزوق',
+      'copper (serum)': 'معمل دكتور صلاح مرزوق',
+      'cmv igg': 'معمل دكتور صلاح مرزوق',
+      'cmv igm': 'معمل دكتور صلاح مرزوق',
+      'complement c3': 'معمل دكتور صلاح مرزوق',
+      'complement c4': 'معمل دكتور صلاح مرزوق',
+      'cystatin c': 'معمل دكتور صلاح مرزوق',
+      'dhea s': 'معمل دكتور صلاح مرزوق',
+      'dhea-s': 'معمل دكتور صلاح مرزوق',
+      'ebv ab igg': 'معمل دكتور صلاح مرزوق',
+      'ebv ab igm': 'معمل دكتور صلاح مرزوق',
+      'estradiol ( e 2 )': 'معمل دكتور صلاح مرزوق',
+      'estradiol': 'معمل دكتور صلاح مرزوق',
+      'e2': 'معمل دكتور صلاح مرزوق',
+      'fibrinogen degradation end-products ( fdps )': 'معمل دكتور صلاح مرزوق',
+      'fdps': 'معمل دكتور صلاح مرزوق',
+      'fibrinogen level': 'معمل دكتور صلاح مرزوق',
+      'growth hormone': 'معمل دكتور صلاح مرزوق',
+      'hav igg': 'معمل دكتور صلاح مرزوق',
+      'hbc ab igg': 'معمل دكتور صلاح مرزوق',
+      'hbc ab igm': 'معمل دكتور صلاح مرزوق',
+      'hbe ag': 'معمل دكتور صلاح مرزوق',
+      'h.pylori iga': 'معمل دكتور صلاح مرزوق',
+      'h.pylori igm': 'معمل دكتور صلاح مرزوق',
+      'h. pylori iga in serum': 'معمل دكتور صلاح مرزوق',
+      'hbs ab': 'معمل دكتور صلاح مرزوق',
+      'quantiferon for tb': 'معمل دكتور صلاح مرزوق',
+      'quantiferon': 'معمل دكتور صلاح مرزوق',
+      'progersteron': 'معمل دكتور صلاح مرزوق',
+      'progesterone': 'معمل دكتور صلاح مرزوق',
+      'pcr for meningitis bacteriral & virus': 'معمل دكتور صلاح مرزوق',
+      'rubella igm': 'معمل دكتور صلاح مرزوق',
+      'rubella igg': 'معمل دكتور صلاح مرزوق',
+      'rubell igg': 'معمل دكتور صلاح مرزوق',
+      'serum zinc': 'معمل دكتور صلاح مرزوق',
+      'zinc': 'معمل دكتور صلاح مرزوق',
+      'serum specific ige for food': 'معمل دكتور صلاح مرزوق',
+      'toxoplasma igm': 'معمل دكتور صلاح مرزوق',
+      'toxoplasma igg': 'معمل دكتور صلاح مرزوق',
+      'transferin': 'معمل دكتور صلاح مرزوق',
+      'thyroglobulin': 'معمل دكتور صلاح مرزوق',
+      'sla ab (soluble liver ag auto ab)': 'معمل دكتور صلاح مرزوق',
+      'serum iga': 'معمل دكتور صلاح مرزوق',
+      'serum igm': 'معمل دكتور صلاح مرزوق',
       'serum ig g': 'معمل دكتور صلاح مرزوق',
       'serum igg': 'معمل دكتور صلاح مرزوق',
       'igm immunoglobulin': 'معمل دكتور صلاح مرزوق',
-      'rubella igg': 'معمل دكتور صلاح مرزوق',
-      'rubell igg': 'معمل دكتور صلاح مرزوق',
-      'rubella igm': 'معمل دكتور صلاح مرزوق',
-      'toxoplasma igg': 'معمل دكتور صلاح مرزوق',
-      'toxoplasma igm': 'معمل دكتور صلاح مرزوق',
-      'ace (angiotensin converting enzyme)': 'معمل دكتور صلاح مرزوق',
-      'h. pylori iga in serum': 'معمل دكتور صلاح مرزوق',
-      'lupus anticoagulant': 'معمل دكتور صلاح مرزوق',
+      'amylase': 'معمل دكتور صلاح مرزوق',
+      'leptospira igm': 'معمل دكتور صلاح مرزوق',
       'lipoprotein (a)': 'معمل دكتور صلاح مرزوق',
+      'lupus anticoagulant': 'معمل دكتور صلاح مرزوق',
+      'pth': 'معمل دكتور صلاح مرزوق',
+      'pancreatic elastase in stool': 'معمل دكتور صلاح مرزوق',
+      'homocystien': 'معمل دكتور صلاح مرزوق',
+      'homocysteine': 'معمل دكتور صلاح مرزوق',
+      'hla b27': 'معمل دكتور صلاح مرزوق',
+      'insulin like growth factor - 1 (igf-1)': 'معمل دكتور صلاح مرزوق',
+      'igf-1': 'معمل دكتور صلاح مرزوق',
+      'antithrombin iii': 'معمل دكتور صلاح مرزوق',
+      'protein c': 'معمل دكتور صلاح مرزوق',
+      'protein s': 'معمل دكتور صلاح مرزوق',
+      'ace (angiotensin converting enzyme)': 'معمل دكتور صلاح مرزوق',
       'a.sm.a': 'معمل دكتور صلاح مرزوق',
       'asma': 'معمل دكتور صلاح مرزوق',
-      'sla ab (soluble liver ag auto ab)': 'معمل دكتور صلاح مرزوق',
-      'ebv ab igm': 'معمل دكتور صلاح مرزوق',
-      'aldosterone renin ratio': 'معمل دكتور صلاح مرزوق',
-      'fibrinogen level': 'معمل دكتور صلاح مرزوق',
-      'anti dgp igg': 'معمل دكتور صلاح مرزوق',
-      'anti dgp iga': 'معمل دكتور صلاح مرزوق',
 
-      // 2. معمل المبره
-      'immunofixation': 'معمل المبره',
-      'protein electrophoresis': 'معمل المبره',
-      'p c r for tb': 'معمل المبره',
+      // ----------------- معمل المبره -----------------
+      'ana by if': 'معمل المبره',
+      'ana immunoplot / microblot': 'معمل المبره',
+      'ana immunoplot': 'معمل المبره',
+      'microblot': 'معمل المبره',
+      'dna fragmenation': 'معمل المبره',
+      'dna fragmentation': 'معمل المبره',
+      'host': 'معمل المبره',
+      'oxielative': 'معمل المبره',
+      'ena profile': 'معمل المبره',
       'pcr for tb': 'معمل المبره',
+      'p c r for tb': 'معمل المبره',
+      'pcr thalassimia': 'معمل المبره',
+      'thalassemia pcr': 'معمل المبره',
+      '1,25 vitamin d': 'معمل المبره',
+      '1,25 dihydroxy vitamin d': 'معمل المبره',
+      'mthfr': 'معمل المبره',
+      'mthfr gene': 'معمل المبره',
+      'pcr for lactase gene mutation': 'معمل المبره',
+      'immunofixation': 'معمل المبره',
+      'immunophenotyping for myeloma panel': 'معمل المبره',
+      'myeloma panel': 'معمل المبره',
 
-      // 3. معمل الانصارى
+      // ----------------- معمل البورديني -----------------
+      'fmf gene': 'معمل البورديني',
+      'fmf': 'معمل البورديني',
+      'hemoglobin electrophoresis': 'معمل البورديني',
+      'protein electrophoresis': 'معمل البورديني',
+
+      // ----------------- معمل الانصارى -----------------
+      'adh': 'معمل الانصارى',
+      'borrelia igg /igm': 'معمل الانصارى',
+      'borrelia': 'معمل الانصارى',
+      'lyme disease': 'معمل الانصارى',
+      'vitamin b2': 'معمل الانصارى',
+      'vitamin b6': 'معمل الانصارى',
       'vitamin a': 'معمل الانصارى',
       'vitamin e': 'معمل الانصارى',
       'serum selenium': 'معمل الانصارى',
       'serum mercury': 'معمل الانصارى',
       'serum lead': 'معمل الانصارى',
-      'vitamin b6': 'معمل الانصارى',
-      'vitamin b2': 'معمل الانصارى',
 
-      // 4. معمل سموحة
+      // ----------------- معمل حسب (Hassab) -----------------
+      'pcr for hbv quantitative': 'Hassab',
+      'hbv quantitative': 'Hassab',
+      'pcr for hcv (quantitative)': 'Hassab',
+      'hcv quantitative': 'Hassab',
+      'methotrexate': 'Hassab',
+      'methotrexate (بعد الغسيل)': 'Hassab',
+
+      // ----------------- معمل البرج -----------------
+      'sodium ,urine 24': 'معمل البرج',
+      'sodium in urine 24 hours': 'معمل البرج',
+
+      // ----------------- معمل يورو لاب (Uro Lab) -----------------
+      'casa-computarized semen analysis': 'معمل يورو لاب (Uro Lab)',
+      'casa': 'معمل يورو لاب (Uro Lab)',
+
+      // ----------------- معمل سموحة -----------------
       'c.e.a.': 'معمل سموحة',
       'cea': 'معمل سموحة',
+      'c.e.a': 'معمل سموحة',
       'ca 15.3': 'معمل سموحة',
       'ca 15-3': 'معمل سموحة',
+      'ca15.3': 'معمل سموحة',
       'alpha-fetoprotein(afp)': 'معمل سموحة',
       'alpha-fetoprotein (afp)': 'معمل سموحة',
       'afp': 'معمل سموحة',
       'a ds d n a': 'معمل سموحة',
       'anti dsdna': 'معمل سموحة',
+      'ant ds dna': 'معمل سموحة',
       'anti double stranaded dna titer': 'معمل سموحة',
 
-      // 5. معمل انطونيادس
-      'l h (luteinising hormone)': 'معمل انطونيادس',
-      'f s h (follicle stimulating hormone)': 'معمل انطونيادس',
-      'l h': 'معمل انطونيادس',
-      'lh': 'معمل انطونيادس',
-      'f s h': 'معمل انطونيادس',
-      'fsh': 'معمل انطونيادس',
-
-      // 6. معمل ياسر الدويك
+      // ----------------- معمل ياسر الدويك -----------------
       'small biopsy': 'معمل ياسر الدويك',
       'large biopsy': 'معمل ياسر الدويك',
+      'medium sized boipsy': 'معمل ياسر الدويك',
+      'medium sized biopsy': 'معمل ياسر الدويك',
       'cytology (pleural fluid)': 'معمل ياسر الدويك',
       'cytology (others)': 'معمل ياسر الدويك',
       'cytology (csf)': 'معمل ياسر الدويك',
       'whole organ': 'معمل ياسر الدويك',
-      'medium sized boipsy': 'معمل ياسر الدويك',
-      'medium sized biopsy': 'معمل ياسر الدويك',
       'immunohistochemistry': 'معمل ياسر الدويك',
       'immunohistochemistry for cd 30': 'معمل ياسر الدويك',
-      'bcl2': 'معمل ياسر الدويك',
-      'immunohistochemistry for cd 10': 'معمل ياسر الدويك'
+      'immunohistochemistry for cd 10': 'معمل ياسر الدويك',
+      'bcl2': 'معمل ياسر الدويك'
     };
 
     function cleanStr(str) {
@@ -186,7 +376,7 @@
       NORMALIZED_MAPPING[cleanStr(k)] = lab;
     }
 
-    // التاريخ الافتراضي
+    // التاريخ التلقائي
     const now = new Date();
     const day = String(now.getDate()).padStart(2, '0');
     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -210,7 +400,6 @@
         const workbook = XLSX.read(data, { type: 'array' });
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
 
-        // قراءة الملف كصفوف خام
         const grid = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
         processMatrixData(grid);
       };
@@ -221,7 +410,6 @@
       formsContainer.innerHTML = '';
       if (!grid || grid.length === 0) return;
 
-      // 1. العثور على الصف الحقيقي الذي يحتوي على عمود Product (الصف رقم 4 في الشيت)
       let headerRowIndex = -1;
       let colMap = { code: 0, name: 2, product: 4, techNotes: 7 };
 
@@ -240,14 +428,12 @@
           if (val === 'technotes' || val === 'technical') { colMap.techNotes = idx; }
         });
 
-        // الصف المطلوب هو الذي يجمع بين كلمة Code و Product
         if (foundProduct || foundCode) {
           headerRowIndex = r;
           break;
         }
       }
 
-      // إذا لم يعثر على الترويسة بالاسم، يعتمد المواضع الافتراضية لشيت Dotcare / PatientServices
       const startRow = headerRowIndex !== -1 ? headerRowIndex + 1 : 4;
 
       const groupedByLab = {};
@@ -255,7 +441,6 @@
       let skippedCount = 0;
       let scannedTotal = 0;
 
-      // متغيرات لتوريث كود واسم المريض في حال كانت الخلايا التالية مدمجة أو فارغة
       let currentPatientCode = '';
       let currentPatientName = '';
 
@@ -268,7 +453,6 @@
         const rawProduct = String(row[colMap.product] || '').trim();
         const rawTechNotes = String(row[colMap.techNotes] || '').trim();
 
-        // تحديث بيانات المريض عند توفرها في أول سطر
         if (rowCode !== '') currentPatientCode = rowCode;
         if (rowName !== '') currentPatientName = rowName;
 
@@ -277,7 +461,6 @@
 
         const normProduct = cleanStr(rawProduct);
 
-        // مطابقة التحليل مع المعمل
         let targetLab = NORMALIZED_MAPPING[normProduct];
         if (!targetLab && normProduct.length > 3) {
           for (let [k, lab] of Object.entries(NORMALIZED_MAPPING)) {
@@ -289,14 +472,13 @@
         }
 
         if (targetLab) {
-          // الشرط الإلزامي: خانة Tech Notes فارغة تماماً
           if (rawTechNotes === '') {
             if (!groupedByLab[targetLab]) groupedByLab[targetLab] = [];
 
             groupedByLab[targetLab].push({
               name: currentPatientName,
               id: currentPatientCode,
-              age: '', // غير متوفر في شيت الخدمات
+              age: '',
               test: rawProduct,
               note: ''
             });
@@ -322,7 +504,6 @@
         return;
       }
 
-      // إظهار الإحصائيات وتفعيل زر الطباعة
       statsSummary.classList.remove('hidden');
       document.getElementById('totalCount').innerText = scannedTotal;
       document.getElementById('transferredCount').innerText = transferredCount;
@@ -330,7 +511,6 @@
       document.getElementById('skippedCount').innerText = skippedCount;
       printBtn.disabled = false;
 
-      // إنشاء صفحة لكل معمل محول إليه
       labNames.forEach(lab => {
         const records = groupedByLab[lab];
         const page = renderOfficialLabForm(lab, records);
@@ -348,7 +528,6 @@
       const tempOut = document.getElementById('tempOut').value;
       const tempIn = document.getElementById('tempIn').value;
 
-      // تجميع تحاليل المريض الواحد تحت بعضها
       const groupedPatients = [];
       const patientMap = {};
 
@@ -397,8 +576,7 @@
         });
       });
 
-      // إضافة أسطر فارغة للطوارئ
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 4; i++) {
         rowsHtml += `
           <tr class="h-6">
             <td class="p-1"></td><td class="p-1"></td><td class="p-1"></td><td class="p-1"></td><td class="p-1"></td><td class="p-1"></td>
@@ -408,21 +586,25 @@
 
       page.innerHTML = `
         <div class="space-y-4">
-          <div class="flex justify-between items-center pb-2">
-            <div class="flex items-center gap-2">
-              <svg class="w-10 h-10 text-emerald-700" viewBox="0 0 100 100" fill="currentColor">
-                <path d="M50 15 C35 35 20 40 10 50 C25 55 40 45 50 15 Z" fill="#047857"/>
-                <path d="M50 15 C65 35 80 40 90 50 C75 55 60 45 50 15 Z" fill="#059669"/>
-                <path d="M50 30 C45 60 25 80 15 90 C35 85 55 70 50 30 Z" fill="#10b981"/>
-                <path d="M50 30 C55 60 75 80 85 90 C65 85 45 70 50 30 Z" fill="#34d399"/>
+          <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+              <svg class="w-12 h-12 flex-shrink-0" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M60 20C44 38 28 46 16 56C32 62 48 52 60 20Z" fill="#0284C7"/>
+                <path d="M60 20C76 38 92 46 104 56C88 62 72 52 60 20Z" fill="#0D9488"/>
+                <path d="M60 38C52 68 34 90 20 102C42 96 64 80 60 38Z" fill="#059669"/>
+                <path d="M60 38C68 68 86 90 100 102C78 96 56 80 60 38Z" fill="#10B981"/>
+                <circle cx="60" cy="55" r="4" fill="#047857"/>
               </svg>
-              <div>
-                <p class="text-xs font-black tracking-wider uppercase text-slate-800">ANDALUSIA</p>
-                <p class="text-[9px] text-slate-500 font-semibold tracking-tighter">AL SHALALAT HOSPITAL</p>
+              <div class="text-right">
+                <div class="flex items-baseline gap-1">
+                  <span class="text-base font-black tracking-wider uppercase text-slate-900">ANDALUSIA</span>
+                  <span class="text-xs font-bold text-emerald-700 uppercase">HOSPITALS</span>
+                </div>
+                <p class="text-[10px] text-slate-500 font-bold tracking-tight">AL SHALALAT • مستشفى الشلالات</p>
               </div>
             </div>
-            <h2 class="text-base font-bold text-slate-800 text-center flex-1">Lab to lab form</h2>
-            <div class="w-24"></div>
+            <h2 class="text-base font-bold text-slate-800 text-center flex-1 pr-6">Lab to lab form</h2>
+            <div class="text-left text-[10px] font-mono text-slate-400">AMS.EG.LAB.004.F.1 V1</div>
           </div>
 
           <table class="form-table w-full text-xs text-right mb-4">

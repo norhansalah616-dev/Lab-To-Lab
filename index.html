@@ -21,13 +21,16 @@
     }
 
     @media print {
+      @page {
+        margin: 8mm;
+      }
       .no-print { display: none !important; }
       body { background: white !important; padding: 0 !important; margin: 0 !important; }
       .lab-page {
         page-break-after: always;
         break-after: page;
         margin: 0 !important;
-        padding: 10mm !important;
+        padding: 8mm !important;
         box-shadow: none !important;
         border: none !important;
         width: 100% !important;
@@ -42,7 +45,7 @@
 
   <div class="max-w-5xl mx-auto space-y-6">
 
-    <!-- كارت التحكم وإدخال البيانات -->
+    <!-- كارت التحكم وإعدادات الإرسال -->
     <div class="bg-white rounded-xl shadow border border-slate-200 p-6 no-print space-y-5">
       <div class="border-b pb-4 flex justify-between items-center">
         <div>
@@ -624,12 +627,13 @@
               <div class="text-right flex flex-col justify-center">
                 <span class="text-base font-extrabold tracking-tight text-[#C59B27] font-serif leading-tight">أندلسية صحة</span>
                 <span class="text-[11px] font-bold tracking-widest text-[#B3861B] uppercase font-sans">ANDALUSIA HEALTH</span>
-                <span class="text-[9px] font-semibold text-slate-500 tracking-tighter">AL SHALALAT • مستشفى الشلالات</span>
+                <span class="text-[9px] font-semibold text-slate-500 tracking-tight">AL SHALALAT • مستشفى الشلالات</span>
               </div>
             </div>
 
             <h2 class="text-base font-bold text-slate-800 text-center flex-1 pr-6">Lab to lab form</h2>
-            <div class="text-left text-[10px] font-mono text-slate-400">AMS.EG.LAB.004.F.1 V1</div>
+            <!-- مساحة فارغة بدلاً من كود النموذج للحفاظ على توسيط العنوان بدقة -->
+            <div class="w-24"></div>
           </div>
 
           <table class="form-table w-full text-xs text-right mb-4">
@@ -675,10 +679,11 @@
             </tbody>
           </table>
 
-          <div class="pt-6 flex justify-between items-center text-[10px] text-slate-500 font-mono">
-            <div></div>
-            <div>Page 1 of 1</div>
-            <div>AMS.EG.LAB.004.F.1 V1</div>
+          <!-- تذييل الصفحة مع حقوق الملكية الفكرية -->
+          <div class="pt-6 flex justify-between items-center text-[10px] text-slate-500 font-sans border-t border-slate-100 mt-4">
+            <div>© Developed by Nourhan Salah</div>
+            <div class="font-mono">Page 1 of 1</div>
+            <div>جميع الحقوق محفوظة © نورهان صلاح</div>
           </div>
         </div>
       `;

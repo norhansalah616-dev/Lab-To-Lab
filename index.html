@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lab to Lab Form Generator - Andalusia Hospitals</title>
+  <title>Lab to Lab Form Generator - Andalusia Health</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
@@ -42,11 +42,12 @@
 
   <div class="max-w-5xl mx-auto space-y-6">
 
+    <!-- كارت التحكم وإدخال البيانات -->
     <div class="bg-white rounded-xl shadow border border-slate-200 p-6 no-print space-y-5">
       <div class="border-b pb-4 flex justify-between items-center">
         <div>
           <h1 class="text-xl font-bold text-slate-900">نظام استخراج نماذج Lab to Lab الرسمية</h1>
-          <p class="text-xs text-slate-500 mt-1">كود النموذج: AMS.EG.LAB.004.F.1 V1 | مستشفى أندلسية الشلالات</p>
+          <p class="text-xs text-slate-500 mt-1">مستشفى أندلسية الشلالات</p>
         </div>
         <button id="printBtn" onclick="window.print()" disabled class="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white font-bold py-2.5 px-6 rounded-lg shadow transition flex items-center gap-2">
           <span>🖨️</span> طباعة / حفظ كـ PDF
@@ -60,7 +61,7 @@
         </div>
         <div>
           <label class="block font-semibold text-slate-700 mb-1">مسئول توصيل العينات:</label>
-          <input type="text" id="courierName" value="ا/ سعيد رجب " class="w-full border rounded p-2">
+          <input type="text" id="courierName" value="ا/ سعيد رجب" class="w-full border rounded p-2">
         </div>
         <div>
           <label class="block font-semibold text-slate-700 mb-1">تاريخ ووقت خروج العينات:</label>
@@ -77,9 +78,9 @@
 
       <!-- منطقة رفع الملف -->
       <div>
-        <label class="cursor-pointer flex flex-col items-center justify-center border-2 border-dashed border-emerald-400 bg-emerald-50/40 hover:bg-emerald-50 py-5 rounded-xl transition">
+        <label class="cursor-pointer flex flex-col items-center justify-center border-2 border-dashed border-amber-400 bg-amber-50/40 hover:bg-amber-50 py-5 rounded-xl transition">
           <span class="text-3xl mb-1">📊</span>
-          <span class="text-sm font-bold text-emerald-800">اضغط لاختيار شيت الإكسيل (Excel Sheet)</span>
+          <span class="text-sm font-bold text-amber-800">اضغط لاختيار شيت الإكسيل (Excel Sheet)</span>
           <span class="text-xs text-slate-400 mt-1">تصفية ذكية مع استبعاد التحاليل الروتينية والداخلية تلقائياً</span>
           <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden">
         </label>
@@ -93,13 +94,14 @@
       </div>
     </div>
 
+    <!-- منطقة عرض النماذج المجهزة للطباعة -->
     <div id="formsContainer" class="space-y-8"></div>
 
   </div>
 
   <script>
     /* =========================================================================
-       1. طبقات حماية وقفل الشفرة المصدرية (Source Code Protection & Anti-Inspect)
+       1. طبقات حماية وقفل الشفرة المصدرية (Source Code Protection)
        ========================================================================= */
     document.addEventListener('contextmenu', function(e) {
       e.preventDefault();
@@ -131,7 +133,7 @@
 
 
     /* =========================================================================
-       2. قائمة استبعاد التحاليل الداخلية والروتينية للمستشفى (Internal Blacklist)
+       2. قائمة استبعاد التحاليل الداخلية والروتينية للمستشفى
        ========================================================================= */
     const INTERNAL_EXCLUDES = [
       'complete urine analysis',
@@ -164,7 +166,7 @@
 
 
     /* =========================================================================
-       3. قاعدة بيانات التحاليل وتوزيع المعامل الخارجية
+       3. خريطة التحاليل وتوزيع المعامل الخارجية
        ========================================================================= */
     const RAW_TEST_MAPPING = {
       // ----------------- معمل انطونيادس -----------------
@@ -195,6 +197,7 @@
       'acth morning': 'معمل دكتور صلاح مرزوق',
       'acth (morning)': 'معمل دكتور صلاح مرزوق',
       'ana': 'معمل دكتور صلاح مرزوق',
+      'a.n.a': 'معمل دكتور صلاح مرزوق',
       'anti centromere': 'معمل دكتور صلاح مرزوق',
       'anti - cardiolipin igm': 'معمل دكتور صلاح مرزوق',
       'anti cardiolipin igm': 'معمل دكتور صلاح مرزوق',
@@ -317,7 +320,6 @@
       'quantiferon': 'معمل المبره',
       'hla b27': 'معمل المبره',
 
-
       // ----------------- معمل البورديني -----------------
       'fmf gene': 'معمل البورديني',
       'fmf': 'معمل البورديني',
@@ -368,7 +370,6 @@
       'ant ds dna': 'معمل سموحة',
       'anti double stranaded dna titer': 'معمل سموحة',
       'ammonia': 'معمل سموحة',
-
 
       // ----------------- معمل ياسر الدويك -----------------
       'small biopsy': 'معمل ياسر الدويك',
@@ -485,12 +486,10 @@
 
         const normProduct = cleanStr(rawProduct);
 
-        // 1. فحص قائمة الاستبعاد أولاً: إذا كان تحليلاً روتينياً داخلياً يتم تخطيه فوراً
         if (NORMALIZED_EXCLUDES.has(normProduct)) {
           continue;
         }
 
-        // 2. المطابقة الدقيقة فقط لمنع أي تداخل حروف عشوائي
         const targetLab = NORMALIZED_MAPPING[normProduct];
 
         if (targetLab) {
@@ -609,22 +608,26 @@
       page.innerHTML = `
         <div class="space-y-4">
           <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+            <!-- الشعار الذهبي الرسمي (Andalusia Health) -->
             <div class="flex items-center gap-3">
-              <svg class="w-12 h-12 flex-shrink-0" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M60 20C44 38 28 46 16 56C32 62 48 52 60 20Z" fill="#0284C7"/>
-                <path d="M60 20C76 38 92 46 104 56C88 62 72 52 60 20Z" fill="#0D9488"/>
-                <path d="M60 38C52 68 34 90 20 102C42 96 64 80 60 38Z" fill="#059669"/>
-                <path d="M60 38C68 68 86 90 100 102C78 96 56 80 60 38Z" fill="#10B981"/>
-                <circle cx="60" cy="55" r="4" fill="#047857"/>
+              <svg class="w-12 h-12 flex-shrink-0" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M48.5 48 L51.5 48 L52.5 86 L47.5 86 Z" fill="#C59B27"/>
+                <path d="M45 86 C45 86 48 88 50 88 C52 88 55 86 55 86 L53.5 85 L46.5 85 Z" fill="#B3861B"/>
+                <path d="M50 16 C48.5 26 48.5 38 50 48 C51.5 38 51.5 26 50 16 Z" fill="#E0B644"/>
+                <path d="M50.5 44 C58 30 71 24 84 28 C73 36 62 41 51.5 47 Z" fill="#D4A732"/>
+                <path d="M51 49 C63 40 78 40 88 48 C76 54 63 53 51.5 51 Z" fill="#C59B27"/>
+                <path d="M51 53 C61 49 76 56 82 67 C72 67 61 62 51 56 Z" fill="#A87B14"/>
+                <path d="M49.5 44 C42 30 29 24 16 28 C27 36 38 41 48.5 47 Z" fill="#D4A732"/>
+                <path d="M49 49 C37 40 22 40 12 48 C24 54 37 53 48.5 51 Z" fill="#C59B27"/>
+                <path d="M49 53 C39 49 24 56 18 67 C28 67 39 62 49 56 Z" fill="#A87B14"/>
               </svg>
-              <div class="text-right">
-                <div class="flex items-baseline gap-1">
-                  <span class="text-base font-black tracking-wider uppercase text-slate-900">ANDALUSIA</span>
-                  <span class="text-xs font-bold text-emerald-700 uppercase">HOSPITALS</span>
-                </div>
-                <p class="text-[10px] text-slate-500 font-bold tracking-tight">AL SHALALAT • مستشفى الشلالات</p>
+              <div class="text-right flex flex-col justify-center">
+                <span class="text-base font-extrabold tracking-tight text-[#C59B27] font-serif leading-tight">أندلسية صحة</span>
+                <span class="text-[11px] font-bold tracking-widest text-[#B3861B] uppercase font-sans">ANDALUSIA HEALTH</span>
+                <span class="text-[9px] font-semibold text-slate-500 tracking-tighter">AL SHALALAT • مستشفى الشلالات</span>
               </div>
             </div>
+
             <h2 class="text-base font-bold text-slate-800 text-center flex-1 pr-6">Lab to lab form</h2>
             <div class="text-left text-[10px] font-mono text-slate-400">AMS.EG.LAB.004.F.1 V1</div>
           </div>

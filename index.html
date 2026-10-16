@@ -8,7 +8,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <style>
-    /* منع تحديد النصوص والسحب في كافة أجزاء الصفحة */
     body {
       -webkit-user-select: none;
       -moz-user-select: none;
@@ -43,7 +42,6 @@
 
   <div class="max-w-5xl mx-auto space-y-6">
 
-    <!-- لوحة التحكم وإعدادات الإرسال (تختفي عند الطباعة) -->
     <div class="bg-white rounded-xl shadow border border-slate-200 p-6 no-print space-y-5">
       <div class="border-b pb-4 flex justify-between items-center">
         <div>
@@ -55,7 +53,6 @@
         </button>
       </div>
 
-      <!-- خانات ترويسة النموذج -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
         <div>
           <label class="block font-semibold text-slate-700 mb-1">اسم المسلم:</label>
@@ -63,7 +60,7 @@
         </div>
         <div>
           <label class="block font-semibold text-slate-700 mb-1">مسئول توصيل العينات:</label>
-          <input type="text" id="courierName" value="ا/ عمار هندي" class="w-full border rounded p-2">
+          <input type="text" id="courierName" value="ا/ سعيد رجب " class="w-full border rounded p-2">
         </div>
         <div>
           <label class="block font-semibold text-slate-700 mb-1">تاريخ ووقت خروج العينات:</label>
@@ -72,7 +69,7 @@
         <div>
           <label class="block font-semibold text-slate-700 mb-1">حرارة الخروج / الوصول:</label>
           <div class="flex gap-1">
-            <input type="text" id="tempOut" value="7.0" title="عند الخروج" class="w-1/2 border rounded p-2 text-center font-bold">
+            <input type="text" id="tempOut" value="3.0" title="عند الخروج" class="w-1/2 border rounded p-2 text-center font-bold">
             <input type="text" id="tempIn" value="4.0" title="عند الوصول" class="w-1/2 border rounded p-2 text-center font-bold">
           </div>
         </div>
@@ -88,7 +85,6 @@
         </label>
       </div>
 
-      <!-- شريط الإحصائيات -->
       <div id="statsSummary" class="hidden text-xs bg-slate-50 border p-3 rounded-lg flex justify-around font-medium text-slate-700">
         <div>إجمالي السجلات المفحوصة: <span id="totalCount" class="font-bold text-slate-900">0</span></div>
         <div>عينات Lab to Lab المقبولة: <span id="transferredCount" class="font-bold text-emerald-600">0</span></div>
@@ -97,7 +93,6 @@
       </div>
     </div>
 
-    <!-- منطقة عرض النماذج المجهزة للطباعة -->
     <div id="formsContainer" class="space-y-8"></div>
 
   </div>
@@ -200,7 +195,6 @@
       'acth morning': 'معمل دكتور صلاح مرزوق',
       'acth (morning)': 'معمل دكتور صلاح مرزوق',
       'ana': 'معمل دكتور صلاح مرزوق',
-      'a.n.a': 'معمل دكتور صلاح مرزوق',
       'anti centromere': 'معمل دكتور صلاح مرزوق',
       'anti - cardiolipin igm': 'معمل دكتور صلاح مرزوق',
       'anti cardiolipin igm': 'معمل دكتور صلاح مرزوق',
@@ -224,7 +218,6 @@
       'amh': 'معمل دكتور صلاح مرزوق',
       'ati scl': 'معمل دكتور صلاح مرزوق',
       'anti scl 70': 'معمل دكتور صلاح مرزوق',
-      'ammonia': 'معمل دكتور صلاح مرزوق',
       'asca-iga': 'معمل دكتور صلاح مرزوق',
       'asca-igg': 'معمل دكتور صلاح مرزوق',
       'b2 glycoprotein igg': 'معمل دكتور صلاح مرزوق',
@@ -264,8 +257,6 @@
       'h.pylori igm': 'معمل دكتور صلاح مرزوق',
       'h. pylori iga in serum': 'معمل دكتور صلاح مرزوق',
       'hbs ab': 'معمل دكتور صلاح مرزوق',
-      'quantiferon for tb': 'معمل دكتور صلاح مرزوق',
-      'quantiferon': 'معمل دكتور صلاح مرزوق',
       'progersteron': 'معمل دكتور صلاح مرزوق',
       'progesterone': 'معمل دكتور صلاح مرزوق',
       'pcr for meningitis bacteriral & virus': 'معمل دكتور صلاح مرزوق',
@@ -285,15 +276,12 @@
       'serum ig g': 'معمل دكتور صلاح مرزوق',
       'serum igg': 'معمل دكتور صلاح مرزوق',
       'igm immunoglobulin': 'معمل دكتور صلاح مرزوق',
-      'amylase': 'معمل دكتور صلاح مرزوق',
       'leptospira igm': 'معمل دكتور صلاح مرزوق',
       'lipoprotein (a)': 'معمل دكتور صلاح مرزوق',
       'lupus anticoagulant': 'معمل دكتور صلاح مرزوق',
-      'pth': 'معمل دكتور صلاح مرزوق',
       'pancreatic elastase in stool': 'معمل دكتور صلاح مرزوق',
       'homocystien': 'معمل دكتور صلاح مرزوق',
       'homocysteine': 'معمل دكتور صلاح مرزوق',
-      'hla b27': 'معمل دكتور صلاح مرزوق',
       'insulin like growth factor - 1 (igf-1)': 'معمل دكتور صلاح مرزوق',
       'igf-1': 'معمل دكتور صلاح مرزوق',
       'antithrombin iii': 'معمل دكتور صلاح مرزوق',
@@ -325,6 +313,10 @@
       'immunofixation': 'معمل المبره',
       'immunophenotyping for myeloma panel': 'معمل المبره',
       'myeloma panel': 'معمل المبره',
+      'quantiferon for tb': 'معمل المبره',
+      'quantiferon': 'معمل المبره',
+      'hla b27': 'معمل المبره',
+
 
       // ----------------- معمل البورديني -----------------
       'fmf gene': 'معمل البورديني',
@@ -375,6 +367,8 @@
       'anti dsdna': 'معمل سموحة',
       'ant ds dna': 'معمل سموحة',
       'anti double stranaded dna titer': 'معمل سموحة',
+      'ammonia': 'معمل سموحة',
+
 
       // ----------------- معمل ياسر الدويك -----------------
       'small biopsy': 'معمل ياسر الدويك',
